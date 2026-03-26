@@ -11,12 +11,14 @@
         body { font-family: 'Inter', sans-serif; }
         .bg-turbo-teal { background-color: #0D9488; }
         .text-turbo-teal { color: #0D9488; }
+        .border-turbo-teal { border-color: #0D9488; }
         .bg-turbo-blue { background-color: #2563EB; }
         .bg-turbo-orange { background-color: #EA580C; }
+        .checklist-scroll { max-height: 450px; overflow-y: auto; }
         .checklist-scroll::-webkit-scrollbar { width: 5px; }
         .checklist-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .checklist-scroll::-webkit-scrollbar-thumb { background: #0D9488; border-radius: 10px; }
-        .os-card-selected { border-left: 4px solid #2563EB; background-color: #f8fafc; }
+        .os-card-selected { border-left: 4px solid #0D9488; background-color: #f0fdfa; }
         .measure-input { background-color: #334155; color: white; font-family: monospace; }
         .tab-active { border-bottom: 3px solid #0D9488; color: #0D9488; font-weight: 800; }
     </style>
@@ -29,9 +31,9 @@
             <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fa-solid fa-check text-3xl"></i>
             </div>
-            <h4 class="text-xl font-black text-slate-800 mb-2 uppercase">Concluído!</h4>
-            <p id="successMsg" class="text-slate-500 text-sm mb-6 font-medium">Ação registrada com sucesso.</p>
-            <button onclick="closeModal('modalSuccess')" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl uppercase text-xs">Continuar</button>
+            <h4 class="text-xl font-black text-slate-800 mb-2 uppercase">Ação Realizada!</h4>
+            <p id="successMsg" class="text-slate-500 text-sm mb-6 font-medium italic">Operação concluída com sucesso.</p>
+            <button onclick="closeModal('modalSuccess')" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl uppercase text-xs tracking-widest transition hover:bg-black">Continuar</button>
         </div>
     </div>
 
@@ -41,13 +43,13 @@
             <img src="https://i.postimg.cc/Jh5Jvrc9/IMG-7901.png" alt="TurboSul Logo" class="h-10">
             <div>
                 <h1 class="text-lg font-bold tracking-tight text-slate-900 uppercase">TurboSul - Controle de Produção</h1>
-                <p class="text-xs text-slate-500 font-medium italic">Setor de Montagem e Finalização</p>
+                <p class="text-xs text-slate-500 font-medium italic">Setor de Montagem e Qualidade</p>
             </div>
         </div>
         <div class="flex items-center space-x-6">
             <div class="text-right border-l pl-6 border-slate-200">
                 <p class="text-sm font-bold leading-none">Administrador</p>
-                <p class="text-[10px] text-turbo-teal font-black uppercase tracking-wider">Montagem</p>
+                <p class="text-[10px] text-turbo-teal font-black uppercase tracking-wider italic">Montagem</p>
             </div>
             <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-bold transition">Sair</button>
         </div>
@@ -61,7 +63,7 @@
                 <button onclick="fetchQueue()" class="text-turbo-teal hover:rotate-180 transition-all duration-500"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
             <div id="os-list" class="divide-y divide-slate-100">
-                <div class="p-8 text-center text-slate-400 text-xs italic">Carregando fila...</div>
+                <div class="p-8 text-center text-slate-400 text-xs italic animate-pulse">Carregando fila...</div>
             </div>
         </aside>
 
@@ -69,19 +71,16 @@
         <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50">
             <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-slate-400">
                 <i class="fa-solid fa-box-open text-6xl mb-4 opacity-10"></i>
-                <p class="uppercase tracking-widest font-bold text-sm">Selecione uma OS para Montagem</p>
+                <p class="uppercase tracking-widest font-bold text-sm">Selecione uma OS na fila</p>
             </div>
 
             <div id="main-workspace" class="hidden space-y-6">
-                <!-- HEADER DO PROCESSO -->
+                <!-- TOP INFO -->
                 <div class="flex flex-col lg:flex-row justify-between gap-6">
-                    <div class="bg-turbo-teal rounded-3xl shadow-lg text-white p-6 min-h-[160px] flex-1 flex flex-col justify-between relative overflow-hidden">
+                    <div class="bg-turbo-teal rounded-3xl shadow-lg text-white p-6 min-h-[140px] flex-1 flex flex-col justify-center relative overflow-hidden">
                         <div class="relative z-10 ml-4">
                             <h2 id="display-os" class="text-3xl font-black mb-1 italic tracking-tighter uppercase">OS-XXXX</h2>
                             <p id="display-desc" class="text-sm font-medium opacity-90 uppercase tracking-widest italic">CLIENTE | MODELO</p>
-                        </div>
-                        <div class="mt-4 flex space-x-3 relative z-10">
-                            <button onclick="openSpecialModal()" class="bg-white/20 hover:bg-white/30 text-white border border-white/40 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">+ Adicionar Serviço Especial</button>
                         </div>
                         <i class="fa-solid fa-screwdriver-wrench absolute right-[-20px] bottom-[-20px] text-white opacity-10 text-9xl"></i>
                     </div>
@@ -89,36 +88,49 @@
                     <div class="bg-slate-900 text-white rounded-3xl p-6 flex flex-col justify-between border-b-4 border-turbo-teal lg:w-80 shadow-xl">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-turbo-teal/20 rounded-xl text-turbo-teal"><i class="fa-solid fa-clock text-xl"></i></div>
-                            <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Produtividade</p><p class="text-xs font-black text-white uppercase">Montagem Ativa</p></div>
+                            <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">Produtividade</p><p class="text-xs font-black text-white uppercase">Montagem Ativa</p></div>
                         </div>
-                        <button class="mt-4 w-full bg-turbo-teal hover:bg-teal-700 text-white py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition shadow-lg">Iniciar Limpeza Setor</button>
+                        <button class="mt-4 w-full bg-turbo-teal hover:bg-teal-700 text-white py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition">Iniciar Limpeza Setor</button>
                     </div>
                 </div>
 
-                <!-- CHECKLISTS (ABAS 1, 2, 3 e 4) -->
+                <!-- CHECKLISTS COMPLETOS -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 border-b bg-slate-50 flex space-x-8 overflow-x-auto scrollbar-hide">
-                        <button onclick="switchTab(this, 'tab1')" class="tab-button tab-active py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">1. Anexos</button>
-                        <button onclick="switchTab(this, 'tab2')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">2. Reparos Gerais</button>
-                        <button onclick="switchTab(this, 'tab3')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">3. Caracol</button>
-                        <button onclick="switchTab(this, 'tab4')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-turbo-teal">4. Balanceamento e Finalização</button>
+                    <div class="p-4 border-b bg-slate-50 flex space-x-8 overflow-x-auto">
+                        <button onclick="switchTab(this, 'tab1')" class="tab-button tab-active py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">1. Anexos (Itens Externos)</button>
+                        <button onclick="switchTab(this, 'tab2')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">2. Reparos Gerais (Interno)</button>
+                        <button onclick="switchTab(this, 'tab3')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">3. Caracol (Caixa Quente)</button>
+                        <button onclick="switchTab(this, 'tab4')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-blue-600">4. Finalização e Balanc.</button>
                     </div>
-                    <div class="p-6">
+                    
+                    <div class="p-6 checklist-scroll">
                         <div id="tab1" class="tab-content space-y-1"></div>
                         <div id="tab2" class="tab-content hidden space-y-1"></div>
                         <div id="tab3" class="tab-content hidden space-y-1"></div>
-                        <div id="tab4" class="tab-content hidden space-y-2">
-                            <!-- Injetado via JS com Inputs de Gramas/Notas -->
+                        <div id="tab4" class="tab-content hidden space-y-4">
+                            <!-- Itens de finalização específicos da montagem -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Balan. Eixo Horário (Grs)</p>
+                                    <input type="text" class="measure-input w-full px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-turbo-teal">
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Balanc. Rotores (Grs)</p>
+                                    <input type="text" class="measure-input w-full px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-turbo-teal">
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 md:col-span-2">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Observações de Finalização</p>
+                                    <textarea class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-turbo-teal" rows="3"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- GRID DE COMPONENTES CHEGANDO (CONVERGÊNCIA) -->
+                <!-- MONITOR DE COMPONENTES CHEGANDO -->
                 <div class="border-t pt-6">
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-6 ml-2">Monitor de Montagem por Componente</h3>
-                    <div id="assembly-grid" class="grid grid-cols-1 gap-4 pb-32">
-                        <!-- Card central de ponta a ponta por peça -->
-                    </div>
+                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 ml-2 italic">Aguardando Componentes de Outros Setores:</h3>
+                    <div id="assembly-grid" class="space-y-4 pb-32"></div>
                 </div>
             </div>
         </main>
@@ -131,24 +143,18 @@
         </button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://zghaqlaqozsskfldgsfe.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnaGFxbGFxb3pzc2tmbGRnc2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMDY1MzQsImV4cCI6MjA4NDc4MjUzNH0.aC2DMOUNhS2uK6KGI5Sf2c2vGhrCKHMnRyZhL3WwSus';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         const API_QUEUE = 'https://webhook.mareflow.com.br/webhook/production/assembly-queue';
-        const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/component-routing'; // Reutiliza para mover peças
-        const USER_ID = '8ab0d7ed-055c-4480-a1af-eb0b08894682';
+        const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/assembly-action';
 
         let selectedOS = null;
         let queueData = [];
 
-        const CHECKLIST_ITEMS = {
-            tab1: ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
-            tab2: ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
-            tab3: ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda'],
-            tab4: ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores', 'Observações']
+        // CHECKLIST COMPLETO (BASEADO NA SUA ESTRUTURA DE ANÁLISE)
+        const ANALYSIS_ITEMS = {
+            'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
+            'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
+            'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda']
         };
 
         window.addEventListener('load', fetchQueue);
@@ -159,13 +165,13 @@
                 const result = await response.json();
                 queueData = Array.isArray(result) ? result : (result.data || []);
                 renderSidebar();
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Erro Fila:", e); }
         }
 
         function renderSidebar() {
             const list = document.getElementById('os-list');
             list.innerHTML = queueData.map(os => `
-                <div onclick="selectOS('${os.id}')" class="p-5 cursor-pointer bg-white border-l-4 ${selectedOS?.id === os.id ? 'os-card-selected border-blue-600' : 'border-transparent'} hover:bg-slate-50 transition mb-2 mx-4 mt-4 rounded-xl shadow-sm">
+                <div onclick="selectOS('${os.id}')" class="p-5 cursor-pointer bg-white border-l-4 ${selectedOS?.id === os.id ? 'os-card-selected' : 'border-transparent'} hover:bg-slate-50 transition mb-2 mx-4 mt-4 rounded-xl shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-sm font-black text-slate-900">${os.business_id}</span>
                         <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
@@ -189,105 +195,87 @@
         }
 
         function renderChecklists() {
-            // Tabs 1, 2, 3
-            ['tab1', 'tab2', 'tab3'].forEach(tabId => {
+            Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
                 const container = document.getElementById(tabId);
-                container.innerHTML = CHECKLIST_ITEMS[tabId].map(item => `
+                container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
                     <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                        <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase ml-2">${item}</div>
+                        <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
                         <div class="col-span-3">
                             <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                <option>NÃO INFORMADO</option><option>PEÇA OK</option><option>RECONDICIONAR</option><option>TROCAR</option>
+                                <option value="NÃO INFORMADO">NÃO INFORMADO</option>
+                                <option value="PEÇA OK">PEÇA OK</option>
+                                <option value="RECONDICIONAR">RECONDICIONAR</option>
+                                <option value="TROCAR">TROCAR</option>
                             </select>
                         </div>
-                        <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent"></div>
+                        <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent focus:ring-1 focus:ring-turbo-teal"></div>
                     </div>`).join('');
             });
-
-            // Tab 4 (Balanceamento)
-            const tab4 = document.getElementById('tab4');
-            tab4.innerHTML = CHECKLIST_ITEMS.tab4.map(item => `
-                <div class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100">
-                    <input type="checkbox" class="w-6 h-6 rounded-lg text-turbo-teal border-slate-300 focus:ring-turbo-teal">
-                    <div class="flex-1">
-                        <p class="text-[11px] font-black text-slate-700 uppercase mb-1">${item}</p>
-                        <input type="text" placeholder="Medidas, Gramas e Notas..." class="measure-input w-full px-4 py-2.5 rounded-xl text-xs outline-none border-2 border-transparent focus:border-turbo-teal transition">
-                    </div>
-                </div>
-            `).join('');
         }
 
         function renderAssemblyGrid() {
             const grid = document.getElementById('assembly-grid');
-            const components = (selectedOS.tracking || []).filter(t => t.stage === 'MONTAGEM');
+            // Filtra peças que estão no estágio de montagem no banco
+            const pieces = (selectedOS.tracking || []).filter(t => t.stage === 'MONTAGEM');
 
-            if (components.length === 0) {
-                grid.innerHTML = '<p class="p-10 text-center text-slate-400 font-bold uppercase italic">Aguardando chegada de peças para montagem...</p>';
+            if (pieces.length === 0) {
+                grid.innerHTML = '<div class="p-10 text-center text-slate-400 font-bold uppercase italic">Aguardando componentes finalizados para montagem...</div>';
                 return;
             }
 
-            grid.innerHTML = components.map(comp => `
-                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-8 flex flex-col lg:flex-row items-center justify-between gap-6" id="comp-card-${comp.component}">
+            grid.innerHTML = pieces.map(p => `
+                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between gap-6" id="card-piece-${p.component}">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-turbo-teal/10 text-turbo-teal rounded-full flex items-center justify-center font-black text-xl italic">${comp.component[0]}</div>
+                        <div class="w-12 h-12 bg-turbo-teal/10 text-turbo-teal rounded-full flex items-center justify-center font-black italic">M</div>
                         <div>
-                            <h4 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">${comp.component}</h4>
-                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Aguardando Início</span>
+                            <h4 class="text-xl font-black text-slate-800 uppercase tracking-tighter">${p.component}</h4>
+                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Pronto para Montagem</span>
                         </div>
                     </div>
-                    
-                    <div class="flex-1 w-full max-w-lg">
-                        <textarea oninput="validateStart('${comp.component}', this)" placeholder="Escreva observações desta montagem para liberar o início..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-turbo-blue transition"></textarea>
-                    </div>
-
-                    <div class="flex gap-3">
-                        <button id="btn-start-${comp.component}" disabled onclick="handleComponentAction('${comp.component}', 'START')" class="bg-blue-200 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest cursor-not-allowed">Iniciar Montagem</button>
-                        <button id="btn-finish-${comp.component}" class="hidden bg-turbo-orange text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Finalizar Montagem</button>
+                    <div class="flex gap-2">
+                        <button onclick="pieceAction('${p.component}', 'START', this)" class="bg-turbo-blue text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg">Iniciar Item</button>
+                        <button onclick="pieceAction('${p.component}', 'FINISH', this)" class="hidden bg-emerald-600 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg">Concluir Item</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function validateStart(comp, textarea) {
-            const btn = document.getElementById(`btn-start-${comp}`);
-            if (textarea.value.length > 5) {
-                btn.disabled = false;
-                btn.classList.replace('bg-blue-200', 'bg-turbo-blue');
-                btn.classList.remove('cursor-not-allowed');
-            } else {
-                btn.disabled = true;
-                btn.classList.replace('bg-turbo-blue', 'bg-blue-200');
-                btn.classList.add('cursor-not-allowed');
-            }
-        }
-
-        async function handleComponentAction(comp, action) {
-            const card = document.getElementById(`comp-card-${comp}`);
-            const btnStart = document.getElementById(`btn-start-${comp}`);
-            const btnFinish = document.getElementById(`btn-finish-${comp}`);
-            
-            // Simulação de tempo de produção via n8n
+        async function pieceAction(piece, action, btn) {
             try {
                 const res = await fetch(API_ACTION, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ os_id: selectedOS.id, component: comp, action: action, user_id: USER_ID })
+                    body: JSON.stringify({ os_id: selectedOS.id, component: piece, action: action })
                 });
-
                 if(res.ok) {
-                    if (action === 'START') {
-                        btnStart.classList.add('hidden');
-                        btnFinish.classList.remove('hidden');
-                        btnFinish.onclick = () => handleComponentAction(comp, 'FINISH');
-                        card.querySelector('span').innerText = 'EM MONTAGEM';
-                        card.querySelector('span').classList.replace('bg-turbo-teal', 'bg-turbo-orange');
+                    if(action === 'START') {
+                        btn.classList.add('hidden');
+                        btn.nextElementSibling.classList.remove('hidden');
+                        btn.closest('.bg-white').classList.add('ring-2', 'ring-turbo-blue');
                     } else {
-                        card.classList.add('opacity-40', 'grayscale', 'pointer-events-none');
-                        card.querySelector('span').innerText = 'FINALIZADO';
-                        document.getElementById('modalSuccess').classList.remove('hidden');
+                        btn.closest('.bg-white').classList.add('opacity-40', 'grayscale', 'pointer-events-none');
+                        btn.innerHTML = 'CONCLUÍDO';
                     }
                 }
             } catch (e) { console.error(e); }
+        }
+
+        async function handleFinalizeOS() {
+            if(!confirm("Deseja finalizar a Montagem completa desta turbina e liberar para expedição?")) return;
+            const btn = document.querySelector('.bg-turbo-orange');
+            btn.disabled = true;
+            try {
+                const res = await fetch(API_ACTION, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ os_id: selectedOS.id, action: 'FINISH_OS' })
+                });
+                if(res.ok) {
+                    document.getElementById('modalSuccess').classList.remove('hidden');
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            } catch (e) { console.error(e); }
+            finally { btn.disabled = false; }
         }
 
         function switchTab(btn, tabId) {
@@ -298,8 +286,12 @@
         }
 
         function updateSelectColor(el) {
-            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none ' + 
-            (el.value === 'PEÇA OK' ? 'bg-emerald-500' : el.value === 'RECONDICIONAR' ? 'bg-yellow-500' : el.value === 'TROCAR' ? 'bg-red-600' : 'bg-slate-400');
+            const val = el.value;
+            el.classList.remove('bg-slate-400', 'bg-emerald-500', 'bg-yellow-500', 'bg-red-600', 'text-white');
+            if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400', 'text-white');
+            else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500', 'text-white');
+            else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500', 'text-white');
+            else if (val === 'TROCAR') el.classList.add('bg-red-600', 'text-white');
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
