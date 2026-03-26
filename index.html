@@ -160,7 +160,7 @@
                 return;
             }
             list.innerHTML = queueData.map(os => `
-                <div id="os-card-${os.id}" onclick="selectOS('${os.id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
+                <div id="os-card-${os.os_id}" onclick="selectOS('${os.os_id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-sm font-black text-slate-900">${os.business_id}</span>
                         <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
@@ -172,7 +172,8 @@
         }
 
         function selectOS(id) {
-            selectedOS = queueData.find(o => o.id === id);
+            // CORREÇÃO: Busca pela chave primária correta 'os_id'
+            selectedOS = queueData.find(o => o.os_id === id);
             
             // Highlight no card selecionado
             document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
@@ -182,7 +183,7 @@
             document.getElementById('main-workspace').classList.remove('hidden');
             document.getElementById('footer-actions').classList.remove('hidden');
             
-            // CORREÇÃO 4: Populando o cabeçalho com os dados corretos
+            // Agora 'selectedOS' não será 'undefined'
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
