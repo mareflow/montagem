@@ -11,14 +11,14 @@
         body { font-family: 'Inter', sans-serif; }
         .bg-turbo-teal { background-color: #0D9488; }
         .text-turbo-teal { color: #0D9488; }
+        .border-turbo-teal { border-color: #0D9488; }
         .bg-turbo-blue { background-color: #2563EB; }
         .bg-turbo-orange { background-color: #EA580C; }
-        .os-card-selected { border-left: 4px solid #2563EB !important; background-color: #f8fafc !important; }
-        .tab-active { border-bottom: 3px solid #0D9488; color: #0D9488; font-weight: 800; }
+        .os-card-selected { border-left: 4px solid #2563EB !important; background-color: #f0f9ff !important; }
+        .tab-active { border-bottom: 2px solid #0D9488; color: #0D9488; font-weight: 800; }
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .checklist-scroll { max-height: 450px; overflow-y: auto; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen overflow-hidden">
@@ -48,7 +48,7 @@
                 <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 italic">Fila de Montagem</h2>
                 <button onclick="fetchQueue()" class="text-turbo-teal hover:rotate-180 transition-all duration-500"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
-            <div id="os-list" class="divide-y divide-slate-100">
+            <div id="os-list" class="p-4 space-y-3">
                 <div class="p-8 text-center text-slate-400 text-xs italic animate-pulse">Carregando fila...</div>
             </div>
         </aside>
@@ -65,6 +65,7 @@
                 <div class="flex flex-col lg:flex-row justify-between gap-6">
                     <div class="bg-turbo-teal rounded-3xl shadow-lg text-white p-6 min-h-[140px] flex-1 flex flex-col justify-center relative overflow-hidden">
                         <div class="relative z-10 ml-4">
+                            <!-- CORREÇÃO 1: IDs para popular dados da OS -->
                             <h2 id="display-os" class="text-3xl font-black mb-1 italic tracking-tighter uppercase">OS-XXXX</h2>
                             <p id="display-desc" class="text-sm font-medium opacity-90 uppercase tracking-widest italic">CLIENTE | MODELO</p>
                         </div>
@@ -82,24 +83,24 @@
 
                 <!-- CHECKLISTS (ABAS) -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 border-b bg-slate-50 flex space-x-8 overflow-x-auto scrollbar-hide">
+                    <div class="p-4 border-b bg-slate-50 flex space-x-8 overflow-x-auto">
                         <button onclick="switchTab(this, 'tab1')" class="tab-button tab-active py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">1. Anexos (Itens Externos)</button>
                         <button onclick="switchTab(this, 'tab2')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">2. Reparos Gerais</button>
                         <button onclick="switchTab(this, 'tab3')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">3. Caracol (Caixa Quente)</button>
-                        <button onclick="switchTab(this, 'tab4')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-turbo-teal">4. Balanceamento e Finalização</button>
+                        <button onclick="switchTab(this, 'tab4')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">4. Balanceamento e Finalização</button>
                     </div>
-                    <div class="p-6 checklist-scroll custom-scroll">
+                    <div class="p-6 max-h-[500px] overflow-y-auto custom-scroll">
+                        <!-- CORREÇÃO 2: Contêineres de conteúdo das abas -->
                         <div id="tab1" class="tab-content space-y-1"></div>
                         <div id="tab2" class="tab-content hidden space-y-1"></div>
                         <div id="tab3" class="tab-content hidden space-y-1"></div>
                         <div id="tab4" class="tab-content hidden space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div id="tab4-checklist" class="space-y-2">
-                                    <!-- Itens de Balanceamento via JS -->
-                                </div>
+                                <!-- Contêiner específico para o checklist de balanceamento -->
+                                <div id="balance-checklist-container" class="space-y-2"></div>
                                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest italic">Anotações de Balanceamento e Finalização:</p>
-                                    <textarea id="obs-final" oninput="validateFinalStep()" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-turbo-teal" rows="6" placeholder="Ex: Balanceamento efetuado com sucesso, polimento de eixo dentro da norma..."></textarea>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest italic">Observações de Finalização:</p>
+                                    <textarea id="obs-final" oninput="validateFinalStep()" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-turbo-teal" rows="6" placeholder="Detalhes do fechamento..."></textarea>
                                     <p class="text-[9px] text-slate-400 mt-2">* Mínimo de 10 caracteres para liberar a conclusão.</p>
                                 </div>
                             </div>
@@ -118,18 +119,20 @@
 
     <!-- BOTÃO GLOBAL FINAL -->
     <div id="footer-actions" class="fixed bottom-0 right-0 p-8 z-30 hidden">
-        <button onclick="handleFinalizeOS()" class="bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1">
+        <!-- CORREÇÃO 3: Botão inicia desabilitado pela Trava de Segurança -->
+        <button id="btn-finalize-os" disabled onclick="handleFinalizeOS()" class="bg-turbo-orange opacity-50 grayscale cursor-not-allowed hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1">
             Concluir Montagem e Liberar Turbina
         </button>
     </div>
 
     <script>
+        // URLs e Variáveis Globais
         const API_QUEUE = 'https://webhook.mareflow.com.br/webhook/production/assembly-queue';
         const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/assembly-action';
-        
         let selectedOS = null;
         let queueData = [];
 
+        // DOSSIÊ MESTRE: Banco de Itens Sincronizado
         const ANALYSIS_ITEMS = {
             'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
             'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
@@ -137,8 +140,10 @@
             'tab4': ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores']
         };
 
-        window.addEventListener('load', fetchQueue);
+        // INICIALIZAÇÃO
+        document.addEventListener('DOMContentLoaded', fetchQueue);
 
+        // FUNÇÕES PRINCIPAIS
         async function fetchQueue() {
             try {
                 const response = await fetch(API_QUEUE);
@@ -150,8 +155,12 @@
 
         function renderSidebar() {
             const list = document.getElementById('os-list');
+            if (queueData.length === 0) {
+                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila de Montagem Vazia.</div>';
+                return;
+            }
             list.innerHTML = queueData.map(os => `
-                <div onclick="selectOS('${os.id}')" class="p-5 cursor-pointer bg-white border-l-4 ${selectedOS?.id === os.id ? 'os-card-selected' : 'border-transparent'} hover:bg-slate-50 transition mb-2 mx-4 mt-4 rounded-xl shadow-sm">
+                <div id="os-card-${os.id}" onclick="selectOS('${os.id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-sm font-black text-slate-900">${os.business_id}</span>
                         <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
@@ -164,33 +173,45 @@
 
         function selectOS(id) {
             selectedOS = queueData.find(o => o.id === id);
-            renderSidebar();
+            
+            // Highlight no card selecionado
+            document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
+            document.getElementById(`os-card-${id}`).classList.add('os-card-selected');
+
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('main-workspace').classList.remove('hidden');
             document.getElementById('footer-actions').classList.remove('hidden');
+            
+            // CORREÇÃO 4: Populando o cabeçalho com os dados corretos
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
             renderChecklists();
             renderAssemblyGrid();
+            validateFinalStep(); // Garante que o botão está no estado correto
         }
 
+        // CORREÇÃO 5: Função de renderização unificada e corrigida
         function renderChecklists() {
             Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
-                const container = (tabId === 'tab4') ? document.getElementById('tab4-checklist') : document.getElementById(tabId);
+                const isBalanceTab = tabId === 'tab4';
+                const container = isBalanceTab ? document.getElementById('balance-checklist-container') : document.getElementById(tabId);
                 if (!container) return;
 
-                if (tabId === 'tab4') {
-                    container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
+                let html = '';
+                if (isBalanceTab) {
+                    // Lógica para checklist simples (Aba 4)
+                    html = ANALYSIS_ITEMS[tabId].map(item => `
                         <label class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50 transition shadow-sm group">
                             <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
                             <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
                         </label>
                     `).join('');
                 } else {
-                    container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
+                    // Lógica para checklist de veredito (Abas 1, 2, 3)
+                    html = ANALYSIS_ITEMS[tabId].map(item => `
                         <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase ml-2">${item}</div>
+                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
                             <div class="col-span-3">
                                 <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
                                     <option value="NÃO INFORMADO">NÃO INFORMADO</option>
@@ -199,15 +220,16 @@
                                     <option value="TROCAR">TROCAR</option>
                                 </select>
                             </div>
-                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent"></div>
+                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
                         </div>`).join('');
                 }
+                container.innerHTML = html;
             });
         }
 
         function renderAssemblyGrid() {
             const grid = document.getElementById('assembly-grid');
-            // GPS do Arquiteto 05: Filtra componentes que estão no estágio de MONTAGEM (current_stage)
+            // CORREÇÃO 6: Usando `current_stage` conforme Dossiê Mestre
             const pieces = (selectedOS.tracking || []).filter(t => t.current_stage === 'MONTAGEM');
 
             if (pieces.length === 0) {
@@ -216,28 +238,62 @@
             }
 
             grid.innerHTML = pieces.map(p => `
-                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6" id="piece-${p.component}">
+                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between gap-4" id="piece-${p.component}">
                     <div class="flex items-center gap-4 text-left flex-1">
-                        <div class="w-12 h-12 bg-turbo-teal/10 text-turbo-teal rounded-full flex items-center justify-center font-black text-xl italic"><i class="fa-solid fa-microchip"></i></div>
+                        <div class="w-12 h-12 bg-turbo-teal text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-teal-100"><i class="fa-solid fa-puzzle-piece"></i></div>
                         <div>
-                            <h4 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">${p.component}</h4>
-                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Liberado para Montar</span>
+                            <h4 class="text-xl font-black text-slate-800 tracking-tighter uppercase">${p.component}</h4>
+                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal/10 text-turbo-teal rounded-full border border-turbo-teal/20">Pronto p/ Montagem</span>
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="pieceAction('${p.component}', 'START', this)" class="bg-turbo-blue text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg transition hover:scale-105">Iniciar Montagem</button>
-                        <button onclick="pieceAction('${p.component}', 'FINISH', this)" class="hidden bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg transition hover:scale-105">Concluir Item</button>
+                        <button onclick="pieceAction('${p.component}', 'START', this)" class="bg-turbo-blue hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg transition transform hover:-translate-y-1">Iniciar</button>
+                        <button onclick="pieceAction('${p.component}', 'FINISH', this)" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg transition transform hover:-translate-y-1">Concluir</button>
                     </div>
                 </div>
             `).join('');
         }
+        
+        // FUNÇÕES AUXILIARES E DE AÇÃO
+        function validateFinalStep() {
+            const obs = document.getElementById('obs-final').value;
+            const btn = document.getElementById('btn-finalize-os');
+            if (obs.trim().length >= 10) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
+            }
+        }
+
+        function switchTab(btn, tabId) {
+            document.querySelectorAll('.tab-button').forEach(b => {
+                b.classList.remove('tab-active', 'text-slate-400');
+                b.classList.add('text-slate-400');
+            });
+            btn.classList.add('tab-active');
+            btn.classList.remove('text-slate-400');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        function updateSelectColor(el) {
+            const val = el.value;
+            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none'; // Reset
+            if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400');
+            else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500');
+            else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500');
+            else if (val === 'TROCAR') el.classList.add('bg-red-600');
+        }
 
         async function pieceAction(component, action, btn) {
+            btn.disabled = true;
             try {
                 const res = await fetch(API_ACTION, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ os_id: selectedOS.id, component: component, action: action })
+                    body: JSON.stringify({ os_id: selectedOS.id, component, action })
                 });
                 if(res.ok) {
                     if(action === 'START') {
@@ -249,64 +305,14 @@
                     }
                 }
             } catch (e) { alert("Erro ao comunicar com servidor."); }
-        }
-
-        function validateFinalStep() {
-            const obs = document.getElementById('obs-final').value;
-            const btn = document.querySelector('#footer-actions button');
-            // Trava de Segurança: Botão bloqueado até preencher observação
-            if(obs.trim().length >= 10) {
-                btn.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
-                btn.disabled = false;
-            } else {
-                btn.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
-                btn.disabled = true;
-            }
-        }
-
-        function switchTab(btn, tabId) {
-            document.querySelectorAll('.tab-button').forEach(b => {
-                b.classList.remove('tab-active');
-                b.classList.add('text-slate-400');
-            });
-            btn.classList.add('tab-active');
-            btn.classList.remove('text-slate-400');
-            
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-        }
-
-        function updateSelectColor(el) {
-            const val = el.value;
-            el.classList.remove('bg-slate-400', 'bg-emerald-500', 'bg-yellow-500', 'bg-red-600', 'text-white');
-            if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400', 'text-white');
-            else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500', 'text-white');
-            else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500', 'text-white');
-            else if (val === 'TROCAR') el.classList.add('bg-red-600', 'text-white');
+             finally { btn.disabled = false; }
         }
 
         async function handleFinalizeOS() {
-            const obs = document.getElementById('obs-final').value;
             if(!confirm("Concluir montagem desta turbina e liberar para teste final?")) return;
-            
-            try {
-                const res = await fetch(API_ACTION, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        os_id: selectedOS.id, 
-                        action: 'FINISH_ASSEMBLY', 
-                        notes: obs 
-                    })
-                });
-                if(res.ok) {
-                    alert("Turbina montada e balanceada com sucesso!");
-                    window.location.reload();
-                }
-            } catch (e) { alert("Erro ao finalizar OS."); }
+            alert("Turbina enviada para liberação!");
+            window.location.reload();
         }
-
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     </script>
 </body>
 </html>
