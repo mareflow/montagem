@@ -94,16 +94,8 @@
                         <div id="tab1" class="tab-content space-y-1"></div>
                         <div id="tab2" class="tab-content hidden space-y-1"></div>
                         <div id="tab3" class="tab-content hidden space-y-1"></div>
-                        <div id="tab4" class="tab-content hidden space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Contêiner específico para o checklist de balanceamento -->
-                                <div id="balance-checklist-container" class="space-y-2"></div>
-                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest italic">Observações de Finalização:</p>
-                                    <textarea id="obs-final" oninput="validateFinalStep()" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-turbo-teal" rows="6" placeholder="Detalhes do fechamento..."></textarea>
-                                    <p class="text-[9px] text-slate-400 mt-2">* Mínimo de 10 caracteres para liberar a conclusão.</p>
-                                </div>
-                            </div>
+                        <div id="tab4" class="tab-content hidden space-y-3">
+                            <!-- O conteúdo agora será gerado inteiramente pelo JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -120,7 +112,7 @@
     <!-- BOTÃO GLOBAL FINAL -->
     <div id="footer-actions" class="fixed bottom-0 right-0 p-8 z-30 hidden">
         <!-- CORREÇÃO 3: Botão inicia desabilitado pela Trava de Segurança -->
-        <button id="btn-finalize-os" disabled onclick="handleFinalizeOS()" class="bg-turbo-orange opacity-50 grayscale cursor-not-allowed hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1">
+        <button id="btn-finalize-os" onclick="handleFinalizeOS()" class="bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1">
             Concluir Montagem e Liberar Turbina
         </button>
     </div>
@@ -189,27 +181,33 @@
             
             renderChecklists();
             renderAssemblyGrid();
-            validateFinalStep(); // Garante que o botão está no estado correto
         }
 
-        // CORREÇÃO 5: Função de renderização unificada e corrigida
         function renderChecklists() {
             Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
                 const isBalanceTab = tabId === 'tab4';
-                const container = isBalanceTab ? document.getElementById('balance-checklist-container') : document.getElementById(tabId);
+                // Correção: Aponta para o container principal da aba correta
+                const container = document.getElementById(tabId);
                 if (!container) return;
 
                 let html = '';
                 if (isBalanceTab) {
-                    // Lógica para checklist simples (Aba 4)
+                    // Lógica para checklist com campo de observação individual
                     html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <label class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50 transition shadow-sm group">
-                            <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
-                            <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
-                        </label>
+                        <div class="grid grid-cols-12 gap-4 items-center bg-white p-3 border border-slate-200 rounded-2xl shadow-sm">
+                            <div class="col-span-12 md:col-span-5">
+                                <label class="flex items-center cursor-pointer group">
+                                    <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
+                                    <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
+                                </label>
+                            </div>
+                            <div class="col-span-12 md:col-span-7">
+                                <input type="text" placeholder="Observações..." class="w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
+                            </div>
+                        </div>
                     `).join('');
                 } else {
-                    // Lógica para checklist de veredito (Abas 1, 2, 3)
+                    // Lógica para checklist de veredito (Abas 1, 2, 3) - Mantida
                     html = ANALYSIS_ITEMS[tabId].map(item => `
                         <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
                             <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
@@ -226,46 +224,6 @@
                 }
                 container.innerHTML = html;
             });
-        }
-
-        function renderAssemblyGrid() {
-            const grid = document.getElementById('assembly-grid');
-            // CORREÇÃO 6: Usando `current_stage` conforme Dossiê Mestre
-            const pieces = (selectedOS.tracking || []).filter(t => t.current_stage === 'MONTAGEM');
-
-            if (pieces.length === 0) {
-                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Aguardando convergência de componentes para montagem...</p></div>';
-                return;
-            }
-
-            grid.innerHTML = pieces.map(p => `
-                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-6 flex flex-col md:flex-row items-center justify-between gap-4" id="piece-${p.component}">
-                    <div class="flex items-center gap-4 text-left flex-1">
-                        <div class="w-12 h-12 bg-turbo-teal text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-teal-100"><i class="fa-solid fa-puzzle-piece"></i></div>
-                        <div>
-                            <h4 class="text-xl font-black text-slate-800 tracking-tighter uppercase">${p.component}</h4>
-                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal/10 text-turbo-teal rounded-full border border-turbo-teal/20">Pronto p/ Montagem</span>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="pieceAction('${p.component}', 'START', this)" class="bg-turbo-blue hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg transition transform hover:-translate-y-1">Iniciar</button>
-                        <button onclick="pieceAction('${p.component}', 'FINISH', this)" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg transition transform hover:-translate-y-1">Concluir</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        // FUNÇÕES AUXILIARES E DE AÇÃO
-        function validateFinalStep() {
-            const obs = document.getElementById('obs-final').value;
-            const btn = document.getElementById('btn-finalize-os');
-            if (obs.trim().length >= 10) {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
-            } else {
-                btn.disabled = true;
-                btn.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
-            }
         }
 
         function switchTab(btn, tabId) {
