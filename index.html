@@ -94,17 +94,13 @@
                         <div id="tab3" class="tab-content hidden space-y-1"></div>
                         <div id="tab4" class="tab-content hidden space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Balan. Eixo Horário (Grs)</p>
-                                    <input type="text" id="val-eixo" class="w-full bg-slate-800 text-white px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-turbo-teal" placeholder="0.00g">
+                                <div id="tab4-checklist" class="space-y-2">
+                                    <!-- Itens de Balanceamento via JS -->
                                 </div>
                                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Balanc. Rotores (Grs)</p>
-                                    <input type="text" id="val-rotor" class="w-full bg-slate-800 text-white px-4 py-3 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-turbo-teal" placeholder="0.00g">
-                                </div>
-                                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 md:col-span-2">
-                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Observações de Finalização</p>
-                                    <textarea id="obs-final" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-turbo-teal" rows="3" placeholder="Detalhes do fechamento..."></textarea>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest italic">Anotações de Balanceamento e Finalização:</p>
+                                    <textarea id="obs-final" oninput="validateFinalStep()" class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-turbo-teal" rows="6" placeholder="Ex: Balanceamento efetuado com sucesso, polimento de eixo dentro da norma..."></textarea>
+                                    <p class="text-[9px] text-slate-400 mt-2">* Mínimo de 10 caracteres para liberar a conclusão.</p>
                                 </div>
                             </div>
                         </div>
@@ -137,7 +133,8 @@
         const ANALYSIS_ITEMS = {
             'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
             'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
-            'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda']
+            'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda'],
+            'tab4': ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores']
         };
 
         window.addEventListener('load', fetchQueue);
@@ -180,41 +177,51 @@
 
         function renderChecklists() {
             Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
-                const container = document.getElementById(tabId);
+                const container = (tabId === 'tab4') ? document.getElementById('tab4-checklist') : document.getElementById(tabId);
                 if (!container) return;
-                container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
-                    <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                        <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase ml-2">${item}</div>
-                        <div class="col-span-3">
-                            <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                <option value="NÃO INFORMADO">NÃO INFORMADO</option>
-                                <option value="PEÇA OK">PEÇA OK</option>
-                                <option value="RECONDICIONAR">RECONDICIONAR</option>
-                                <option value="TROCAR">TROCAR</option>
-                            </select>
-                        </div>
-                        <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent"></div>
-                    </div>`).join('');
+
+                if (tabId === 'tab4') {
+                    container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
+                        <label class="flex items-center p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:bg-slate-50 transition shadow-sm group">
+                            <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
+                            <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
+                        </label>
+                    `).join('');
+                } else {
+                    container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
+                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
+                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase ml-2">${item}</div>
+                            <div class="col-span-3">
+                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
+                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
+                                    <option value="PEÇA OK">PEÇA OK</option>
+                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
+                                    <option value="TROCAR">TROCAR</option>
+                                </select>
+                            </div>
+                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent"></div>
+                        </div>`).join('');
+                }
             });
         }
 
         function renderAssemblyGrid() {
             const grid = document.getElementById('assembly-grid');
-            // Procura no tracking as peças que estão no estágio de MONTAGEM
-            const pieces = (selectedOS.tracking || []).filter(t => t.stage === 'MONTAGEM');
+            // GPS do Arquiteto 05: Filtra componentes que estão no estágio de MONTAGEM (current_stage)
+            const pieces = (selectedOS.tracking || []).filter(t => t.current_stage === 'MONTAGEM');
 
             if (pieces.length === 0) {
-                grid.innerHTML = '<p class="p-10 text-center text-slate-400 font-bold uppercase italic">Nenhuma peça liberada para montagem no momento.</p>';
+                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Aguardando convergência de componentes para montagem...</p></div>';
                 return;
             }
 
             grid.innerHTML = pieces.map(p => `
                 <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6" id="piece-${p.component}">
                     <div class="flex items-center gap-4 text-left flex-1">
-                        <div class="w-12 h-12 bg-turbo-teal/10 text-turbo-teal rounded-full flex items-center justify-center font-black text-xl italic">M</div>
+                        <div class="w-12 h-12 bg-turbo-teal/10 text-turbo-teal rounded-full flex items-center justify-center font-black text-xl italic"><i class="fa-solid fa-microchip"></i></div>
                         <div>
                             <h4 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">${p.component}</h4>
-                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Pronto p/ Montagem</span>
+                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Liberado para Montar</span>
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -244,6 +251,19 @@
             } catch (e) { alert("Erro ao comunicar com servidor."); }
         }
 
+        function validateFinalStep() {
+            const obs = document.getElementById('obs-final').value;
+            const btn = document.querySelector('#footer-actions button');
+            // Trava de Segurança: Botão bloqueado até preencher observação
+            if(obs.trim().length >= 10) {
+                btn.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
+                btn.disabled = false;
+            } else {
+                btn.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
+                btn.disabled = true;
+            }
+        }
+
         function switchTab(btn, tabId) {
             document.querySelectorAll('.tab-button').forEach(b => {
                 b.classList.remove('tab-active');
@@ -266,10 +286,24 @@
         }
 
         async function handleFinalizeOS() {
+            const obs = document.getElementById('obs-final').value;
             if(!confirm("Concluir montagem desta turbina e liberar para teste final?")) return;
-            // Lógica de finalização enviando dados de balancemento
-            alert("Turbina enviada para liberação!");
-            window.location.reload();
+            
+            try {
+                const res = await fetch(API_ACTION, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        os_id: selectedOS.id, 
+                        action: 'FINISH_ASSEMBLY', 
+                        notes: obs 
+                    })
+                });
+                if(res.ok) {
+                    alert("Turbina montada e balanceada com sucesso!");
+                    window.location.reload();
+                }
+            } catch (e) { alert("Erro ao finalizar OS."); }
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
