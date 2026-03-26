@@ -100,10 +100,28 @@
                     </div>
                 </div>
 
-                <!-- MONITOR DE COMPONENTES -->
-                <div class="border-t pt-6">
-                    <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-6 ml-2 italic">Aguardando Componentes p/ Montagem:</h3>
-                    <div id="assembly-grid" class="grid grid-cols-1 gap-4 pb-32"></div>
+                <!-- MONITOR DE COMPONENTES E PENDÊNCIAS -->
+                <div class="space-y-6 pt-6 border-t border-slate-200">
+                    
+                    <!-- Botão de Alerta de Peças Pendentes -->
+                    <div>
+                        <button id="toggle-pending-btn" onclick="togglePendingView()" class="w-full flex justify-between items-center bg-amber-100 text-amber-800 p-4 rounded-2xl border-2 border-amber-200 hover:bg-amber-200/60 transition shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span class="text-xs font-black uppercase tracking-wider">Monitor de Peças Pendentes</span>
+                            </div>
+                            <span id="pending-count-badge" class="px-3 py-1 bg-amber-500 text-white text-xs font-black rounded-full">0</span>
+                        </button>
+                        <div id="pending-parts-list" class="hidden mt-3 bg-white p-4 rounded-2xl border border-slate-200 space-y-2 max-h-48 overflow-y-auto custom-scroll">
+                            <!-- Lista de peças pendentes será inserida aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Painel de Ação de Montagem -->
+                    <div>
+                         <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 ml-2 italic">Componentes Liberados para Montagem:</h3>
+                         <div id="assembly-grid" class="space-y-4 pb-32"></div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -164,10 +182,8 @@
         }
 
         function selectOS(id) {
-            // CORREÇÃO: Busca pela chave primária correta 'os_id'
             selectedOS = queueData.find(o => o.os_id === id);
             
-            // Highlight no card selecionado
             document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
             document.getElementById(`os-card-${id}`).classList.add('os-card-selected');
 
@@ -175,12 +191,14 @@
             document.getElementById('main-workspace').classList.remove('hidden');
             document.getElementById('footer-actions').classList.remove('hidden');
             
-            // Agora 'selectedOS' não será 'undefined'
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
+            // Chamadas para renderizar todos os elementos da nova arquitetura
             renderChecklists();
             renderAssemblyGrid();
+            renderPendingParts();
+            checkOverallStatus();
         }
 
         function renderChecklists() {
@@ -226,6 +244,106 @@
             });
         }
 
+function renderAssemblyGrid() {
+            const grid = document.getElementById('assembly-grid');
+            const pieces = (selectedOS.components_to_render || []);
+
+            if (pieces.length === 0) {
+                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Nenhum componente liberado para esta OS.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = pieces.map(componentName => `
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between md:gap-4" id="row-comp-${componentName}">
+                    <h4 class="text-base font-black text-slate-800 uppercase tracking-tighter md:w-1/4">${componentName}</h4>
+                    <div class="flex-1">
+                        <input id="obs-comp-${componentName}" oninput="validateComponentAction(this, '${componentName}')" type="text" placeholder="Adicionar observação para iniciar..." class="w-full bg-slate-100 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border-transparent transition">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-start-${componentName}" disabled onclick="pieceAction('${componentName}', 'START')" class="flex-1 bg-turbo-blue/50 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition cursor-not-allowed">Iniciar</button>
+                        <button id="btn-finish-${componentName}" onclick="pieceAction('${componentName}', 'FINISH')" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition">Finalizar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function validateComponentAction(inputElement, componentName) {
+            const startButton = document.getElementById(`btn-start-${componentName}`);
+            if (inputElement.value.trim().length > 0) {
+                startButton.disabled = false;
+                startButton.classList.remove('bg-turbo-blue/50', 'cursor-not-allowed');
+                startButton.classList.add('bg-turbo-blue', 'hover:bg-blue-700');
+            } else {
+                startButton.disabled = true;
+                startButton.classList.add('bg-turbo-blue/50', 'cursor-not-allowed');
+                startButton.classList.remove('bg-turbo-blue', 'hover:bg-blue-700');
+            }
+        }
+
+        async function pieceAction(component, action) {
+            const obs = (action === 'START') ? document.getElementById(`obs-comp-${component}`).value : '';
+            const startBtn = document.getElementById(`btn-start-${component}`);
+            const finishBtn = document.getElementById(`btn-finish-${component}`);
+            const row = document.getElementById(`row-comp-${component}`);
+
+            const buttonToDisable = (action === 'START') ? startBtn : finishBtn;
+            buttonToDisable.disabled = true;
+
+            try {
+                const res = await fetch(API_ACTION, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ os_id: selectedOS.os_id, component, action, observation: obs })
+                });
+                if(res.ok) {
+                    if(action === 'START') {
+                        startBtn.classList.add('hidden');
+                        finishBtn.classList.remove('hidden');
+                    } else {
+                        row.classList.add('opacity-40', 'grayscale', 'pointer-events-none');
+                        finishBtn.innerHTML = 'Concluído';
+                    }
+                }
+            } catch (e) { alert("Erro ao comunicar com o servidor."); }
+             finally { buttonToDisable.disabled = false; }
+        }
+
+        function renderPendingParts() {
+            const container = document.getElementById('pending-parts-list');
+            const badge = document.getElementById('pending-count-badge');
+            const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
+
+            badge.textContent = pendingItems.length;
+
+            if (pendingItems.length > 0) {
+                container.innerHTML = pendingItems.map(item => `
+                    <div class="flex items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-3"></i>
+                        <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">${item.item}</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<p class="text-xs text-center italic text-slate-400 p-4">Nenhuma peça com troca pendente.</p>`;
+            }
+        }
+
+        function checkOverallStatus() {
+            const finalizeButton = document.getElementById('btn-finalize-os');
+            const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
+
+            if (pendingItems.length === 0) {
+                finalizeButton.disabled = false;
+                finalizeButton.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
+            } else {
+                finalizeButton.disabled = true;
+                finalizeButton.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
+            }
+        }
+        
+        function togglePendingView() {
+            document.getElementById('pending-parts-list').classList.toggle('hidden');
+        }
+
         function switchTab(btn, tabId) {
             document.querySelectorAll('.tab-button').forEach(b => {
                 b.classList.remove('tab-active', 'text-slate-400');
@@ -244,27 +362,6 @@
             else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500');
             else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500');
             else if (val === 'TROCAR') el.classList.add('bg-red-600');
-        }
-
-        async function pieceAction(component, action, btn) {
-            btn.disabled = true;
-            try {
-                const res = await fetch(API_ACTION, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ os_id: selectedOS.id, component, action })
-                });
-                if(res.ok) {
-                    if(action === 'START') {
-                        btn.classList.add('hidden');
-                        btn.nextElementSibling.classList.remove('hidden');
-                    } else {
-                        btn.closest('.bg-white').classList.add('opacity-40', 'grayscale', 'pointer-events-none');
-                        btn.innerHTML = 'CONCLUÍDO';
-                    }
-                }
-            } catch (e) { alert("Erro ao comunicar com servidor."); }
-             finally { btn.disabled = false; }
         }
 
         async function handleFinalizeOS() {
