@@ -150,9 +150,14 @@
         async function fetchQueue() {
             try {
                 const response = await fetch(API_QUEUE);
-                queueData = await response.json();
+                const result = await response.json();
+                // Garante que queueData seja sempre um array, tratando diferentes retornos do n8n
+                queueData = Array.isArray(result) ? result : (result.data || (result.id ? [result] : []));
                 renderSidebar();
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("Erro na fila:", e);
+                document.getElementById('os-list').innerHTML = '<p class="p-8 text-center text-red-500 text-xs">Erro ao carregar dados.</p>';
+            }
         }
 
         function renderSidebar() {
@@ -182,8 +187,10 @@
         }
 
         function renderChecklists() {
+            // 1. Renderiza as Abas 1, 2 e 3 (Padrão de Vereditos)
             Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
                 const container = document.getElementById(tabId);
+                if (!container) return;
                 container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
                     <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
                         <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
@@ -195,37 +202,79 @@
                                 <option value="TROCAR">TROCAR</option>
                             </select>
                         </div>
-                        <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent"></div>
+                        <div class="col-span-4">
+                            <input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent focus:ring-1 focus:ring-turbo-teal">
+                        </div>
                     </div>`).join('');
             });
+
+            // 2. Renderiza a Aba 4 (Balanceamento - Campos de Medida)
+            const tab4 = document.getElementById('tab4');
+            const itensBalanceamento = ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores', 'Observações'];
+            
+            tab4.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${itensBalanceamento.map(item => `
+                        <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex flex-col space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" class="w-5 h-5 rounded border-slate-300 text-turbo-teal focus:ring-turbo-teal">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${item}</span>
+                            </div>
+                            <input type="text" placeholder="Digite medidas ou gramas..." class="measure-input w-full px-5 py-3.5 rounded-2xl text-sm font-bold outline-none border-2 border-transparent focus:border-turbo-teal transition-all">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
 
-        function renderAssemblyGrid() {
+function renderAssemblyGrid() {
             const grid = document.getElementById('assembly-grid');
-            // IMPORTANTE: Filtrar apenas peças que estão no estágio de montagem
-            const components = (selectedOS.tracking || []).filter(t => t.stage === 'MONTAGEM');
+            // CORREÇÃO: Usa current_stage para filtrar o que está na montagem
+            const components = (selectedOS.tracking || []).filter(t => t.current_stage === 'MONTAGEM');
 
             if (components.length === 0) {
-                grid.innerHTML = '<p class="p-10 text-center text-slate-400 font-bold uppercase italic">Aguardando componentes finalizados para montagem...</p>';
+                grid.innerHTML = '<div class="p-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-100"><p class="text-slate-400 font-black uppercase tracking-widest italic">Aguardando chegada de peças para montagem...</p></div>';
                 return;
             }
 
-            grid.innerHTML = components.map(comp => `
-                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-8 flex flex-col lg:flex-row items-center justify-between gap-6" id="comp-card-${comp.component}">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-turbo-teal/10 text-turbo-teal rounded-full flex items-center justify-center font-black text-xl italic">${comp.component[0]}</div>
+            grid.innerHTML = components.map(comp => {
+                const name = comp.component_name || comp.component;
+                return `
+                <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-100 p-8 flex flex-col lg:flex-row items-center justify-between gap-8 mb-4" id="comp-card-${name}">
+                    <div class="flex items-center gap-6 min-w-[250px]">
+                        <div class="w-16 h-16 bg-turbo-teal text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-teal-100 italic">${name[0]}</div>
                         <div>
-                            <h4 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">${comp.component}</h4>
-                            <span class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Pronto p/ Montagem</span>
+                            <h4 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">${name}</h4>
+                            <span id="badge-${name}" class="text-[9px] font-black uppercase px-3 py-1 bg-turbo-teal text-white rounded-full">Pronto p/ Montagem</span>
                         </div>
                     </div>
                     
-                    <div class="flex gap-3">
-                        <button onclick="handlePieceAction('${comp.component}', 'START', this)" class="bg-turbo-blue text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Iniciar Montagem</button>
-                        <button onclick="handlePieceAction('${comp.component}', 'FINISH', this)" class="hidden bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Concluir Item</button>
+                    <div class="flex-1 w-full">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Observações de Início (Obrigatório)</p>
+                        <textarea oninput="validateStart('${name}', this)" placeholder="Escreva o estado inicial da peça para liberar a montagem..." class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium outline-none focus:border-turbo-blue transition-all" rows="2"></textarea>
                     </div>
-                </div>
-            `).join('');
+
+                    <div class="flex gap-3 min-w-[200px]">
+                        <button id="btn-start-${name}" disabled onclick="handlePieceAction('${name}', 'START', this)" class="w-full bg-slate-200 text-slate-400 px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest cursor-not-allowed transition-all">Iniciar</button>
+                        <button id="btn-finish-${name}" onclick="handlePieceAction('${name}', 'FINISH', this)" class="hidden w-full bg-turbo-orange text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg animate-pulse">Finalizar</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function validateStart(comp, textarea) {
+            const btn = document.getElementById(`btn-start-${comp}`);
+            if (textarea.value.trim().length >= 5) {
+                btn.disabled = false;
+                btn.classList.replace('bg-slate-200', 'bg-turbo-blue');
+                btn.classList.replace('text-slate-400', 'text-white');
+                btn.classList.remove('cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.replace('bg-turbo-blue', 'bg-slate-200');
+                btn.classList.replace('text-white', 'text-slate-400');
+                btn.classList.add('cursor-not-allowed');
+            }
         }
 
         async function handlePieceAction(comp, action, btn) {
