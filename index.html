@@ -65,7 +65,6 @@
                 <div class="flex flex-col lg:flex-row justify-between gap-6">
                     <div class="bg-turbo-teal rounded-3xl shadow-lg text-white p-6 min-h-[140px] flex-1 flex flex-col justify-center relative overflow-hidden">
                         <div class="relative z-10 ml-4">
-                            <!-- CORREÇÃO 1: IDs para popular dados da OS -->
                             <h2 id="display-os" class="text-3xl font-black mb-1 italic tracking-tighter uppercase">OS-XXXX</h2>
                             <p id="display-desc" class="text-sm font-medium opacity-90 uppercase tracking-widest italic">CLIENTE | MODELO</p>
                         </div>
@@ -90,13 +89,10 @@
                         <button onclick="switchTab(this, 'tab4')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">4. Balanceamento e Finalização</button>
                     </div>
                     <div class="p-6 max-h-[500px] overflow-y-auto custom-scroll">
-                        <!-- CORREÇÃO 2: Contêineres de conteúdo das abas -->
                         <div id="tab1" class="tab-content space-y-1"></div>
                         <div id="tab2" class="tab-content hidden space-y-1"></div>
                         <div id="tab3" class="tab-content hidden space-y-1"></div>
-                        <div id="tab4" class="tab-content hidden space-y-3">
-                            <!-- O conteúdo agora será gerado inteiramente pelo JavaScript -->
-                        </div>
+                        <div id="tab4" class="tab-content hidden space-y-3"></div>
                     </div>
                 </div>
 
@@ -129,7 +125,6 @@
 
     <!-- BOTÃO GLOBAL FINAL -->
     <div id="footer-actions" class="fixed bottom-0 right-0 p-8 z-30 hidden">
-        <!-- CORREÇÃO 3: Botão inicia desabilitado pela Trava de Segurança -->
         <button id="btn-finalize-os" onclick="handleFinalizeOS()" class="bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1">
             Concluir Montagem e Liberar Turbina
         </button>
@@ -194,7 +189,6 @@
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
-            // Chamadas para renderizar todos os elementos da nova arquitetura
             renderChecklists();
             renderAssemblyGrid();
             renderPendingParts();
@@ -209,7 +203,7 @@
 
                 let html = '';
                 if (isBalanceTab) {
-                    // Mapeamento fixo para os campos que o n8n espera
+                    // Mapeamento para o n8n capturar os campos da Aba 4
                     const fieldMap = {
                         'Balan. Eixo Horário': 'montagem_conjunto',
                         'Polim. Eixo Horário': 'polimento_eixo',
@@ -230,23 +224,7 @@
                         </div>
                     `).join('');
                 } else {
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
-                            <div class="col-span-3">
-                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
-                                    <option value="PEÇA OK">PEÇA OK</option>
-                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
-                                    <option value="TROCAR">TROCAR</option>
-                                </select>
-                            </div>
-                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
-                        </div>`).join('');
-                }
-                container.innerHTML = html;
-            });
-        }
+                    // Layout para as abas 1, 2 e 3
                     html = ANALYSIS_ITEMS[tabId].map(item => `
                         <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
                             <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
@@ -265,7 +243,7 @@
             });
         }
 
-function renderAssemblyGrid() {
+        function renderAssemblyGrid() {
             const grid = document.getElementById('assembly-grid');
             const pieces = (selectedOS.components_to_render || []);
 
@@ -321,7 +299,6 @@ function renderAssemblyGrid() {
                     if(action === 'START') {
                         startBtn.classList.add('hidden');
                         finishBtn.classList.remove('hidden');
-                        // Trava o input após iniciar
                         inputField.disabled = true;
                         inputField.classList.add('bg-slate-100', 'text-slate-400');
                     } else {
@@ -352,22 +329,13 @@ function renderAssemblyGrid() {
             }
         }
 
-function checkOverallStatus() {
+        function checkOverallStatus() {
             const finalizeButton = document.getElementById('btn-finalize-os');
-            
-            // Forçamos o botão a ficar SEMPRE liberado
             finalizeButton.disabled = false;
-            
-            // Removemos as classes de "desativado" (cinza e bloqueado)
             finalizeButton.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
-            
-            // Garantimos que ele tenha a cor laranja original e o efeito de hover
             finalizeButton.className = 'bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1';
-            
-            // Removemos qualquer mensagem de erro que possa estar no "title"
             finalizeButton.title = "";
         }
-        
         
         function togglePendingView() {
             document.getElementById('pending-parts-list').classList.toggle('hidden');
@@ -386,7 +354,7 @@ function checkOverallStatus() {
 
         function updateSelectColor(el) {
             const val = el.value;
-            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none'; // Reset
+            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none';
             if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400');
             else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500');
             else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500');
@@ -400,12 +368,10 @@ function checkOverallStatus() {
             const btn = document.getElementById('btn-finalize-os');
             const originalText = btn.innerText;
             
-            // Bloqueia o botão para evitar cliques duplos
             btn.disabled = true;
             btn.innerText = "ENVIANDO...";
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            // Coleta os dados de balanceamento da Aba 4
             const balanceData = {};
             document.querySelectorAll('.balance-input').forEach(input => {
                 const fieldName = input.getAttribute('data-field');
@@ -414,7 +380,7 @@ function checkOverallStatus() {
 
             const payload = {
                 os_id: selectedOS.os_id,
-                action: 'FINALIZE_ASSEMBLY', // Identificador opcional para o n8n
+                action: 'FINALIZE_ASSEMBLY',
                 balance_data: balanceData
             };
 
