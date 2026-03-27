@@ -141,59 +141,48 @@
 
     <script>
         // URLs e Variáveis Globais
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- BIBLIOTECA SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
+        // 1. CONFIGURAÇÕES GERAIS
         const SUPABASE_URL = 'https://zghaqlaqozsskfldgsfe.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnaGFxbGFxb3pzc2tmbGRnc2ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMDY1MzQsImV4cCI6MjA4NDc4MjUzNH0.aC2DMOUNhS2uK6KGI5Sf2c2vGhrCKHMnRyZhL3WwSus';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const API_QUEUE = 'https://webhook.mareflow.com.br/webhook/production/assembly-queue';
         const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/assembly-action';
+        
         let selectedOS = null;
         let queueData = [];
 
-        // DOSSIÊ MESTRE: Banco de Itens Sincronizado
-        const ANALYSIS_ITEMS = {
-            'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
-            'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
-            'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda'],
-            'tab4': ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores']
-        };
+        // 2. BUSCA DE FILA
+        window.addEventListener('load', fetchQueue);
 
-        // INICIALIZAÇÃO
-        document.addEventListener('DOMContentLoaded', fetchQueue);
-
-        // FUNÇÕES PRINCIPAIS
         async function fetchQueue() {
             try {
                 const response = await fetch(API_QUEUE);
                 const data = await response.json();
                 queueData = Array.isArray(data) ? data : (data.data || []);
                 renderSidebar();
-            } catch (e) { console.error("Erro na Fila:", e); }
+            } catch (e) { console.error("Erro ao carregar fila:", e); }
         }
 
         function renderSidebar() {
             const list = document.getElementById('os-list');
             if (queueData.length === 0) {
-                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila de Montagem Vazia.</div>';
+                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila Vazia.</div>';
                 return;
             }
             list.innerHTML = queueData.map(os => `
-                <div id="os-card-${os.os_id}" onclick="selectOS('${os.os_id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-sm font-black text-slate-900">${os.business_id}</span>
-                        <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
-                    </div>
-                    <p class="text-xs font-bold text-slate-700 uppercase mb-1">${os.model}</p>
-                    <p class="text-[10px] font-medium text-slate-500 uppercase truncate">${os.client}</p>
-                </div>
-            `).join('');
+                <div id="os-card-${os.os_id}" onclick="selectOS('${os.os_id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm mb-2">
+                    <div class="flex justify-between font-black text-sm"><span>${os.business_id}</span></div>
+                    <p class="text-xs font-bold text-slate-700 uppercase">${os.model}</p>
+                </div>`).join('');
         }
 
         function selectOS(id) {
             selectedOS = queueData.find(o => o.os_id === id);
-            
             document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
             document.getElementById(`os-card-${id}`).classList.add('os-card-selected');
 
@@ -204,70 +193,24 @@
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
-            // Chamadas para renderizar todos os elementos da nova arquitetura
-            renderChecklists();
             renderAssemblyGrid();
             renderPendingParts();
-            checkOverallStatus();
         }
 
-        function renderChecklists() {
-            Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
-                const isBalanceTab = tabId === 'tab4';
-                // Correção: Aponta para o container principal da aba correta
-                const container = document.getElementById(tabId);
-                if (!container) return;
-
-                let html = '';
-                if (isBalanceTab) {
-                    // Lógica para checklist com campo de observação individual
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-4 items-center bg-white p-3 border border-slate-200 rounded-2xl shadow-sm">
-                            <div class="col-span-12 md:col-span-5">
-                                <label class="flex items-center cursor-pointer group">
-                                    <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
-                                    <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
-                                </label>
-                            </div>
-                            <div class="col-span-12 md:col-span-7">
-                                <input type="text" placeholder="Observações..." class="w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    // Lógica para checklist de veredito (Abas 1, 2, 3) - Mantida
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
-                            <div class="col-span-3">
-                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
-                                    <option value="PEÇA OK">PEÇA OK</option>
-                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
-                                    <option value="TROCAR">TROCAR</option>
-                                </select>
-                            </div>
-                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
-                        </div>`).join('');
-                }
-                container.innerHTML = html;
-            });
-        }
-
-function renderAssemblyGrid() {
+        // 3. DIÁRIO DE MONTAGEM (CADA PEÇA TEM SEU LOG)
+        function renderAssemblyGrid() {
             const grid = document.getElementById('assembly-grid');
             const pieces = (selectedOS.components_to_render || []);
 
             if (pieces.length === 0) {
-                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Nenhum componente liberado para esta OS.</p></div>';
+                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Nenhum componente liberado.</p></div>';
                 return;
             }
 
-            // DIÁRIO DE MONTAGEM: Campo de log por peça
             grid.innerHTML = pieces.map(comp => `
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4" id="row-comp-${comp}">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h4 class="text-base font-black text-slate-800 uppercase w-32 tracking-tighter">${comp}</h4>
-                    <input id="obs-comp-${comp}" type="text" placeholder="Observação técnica desta peça..." class="flex-1 bg-slate-50 text-sm rounded-lg px-4 py-3 outline-none border border-slate-200 focus:ring-2 focus:ring-turbo-teal transition-all">
+                    <input id="obs-comp-${comp}" type="text" placeholder="Observação técnica da montagem..." class="flex-1 bg-slate-50 text-sm rounded-lg px-4 py-3 outline-none border border-slate-200 focus:ring-2 focus:ring-turbo-teal transition-all">
                     <button onclick="gravarLogMontagem('${comp}', this)" class="bg-turbo-teal hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition shadow-md">
                         GRAVAR LOG
                     </button>
@@ -277,11 +220,10 @@ function renderAssemblyGrid() {
         async function gravarLogMontagem(componente, btn) {
             const input = document.getElementById(`obs-comp-${componente}`);
             const observacao = input.value.trim();
-            if (!observacao) { alert("Digite uma observação antes de gravar."); return; }
+            if (!observacao) { alert("Digite o que foi feito na peça."); return; }
 
             const originalText = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = "GRAVANDO...";
+            btn.disabled = true; btn.innerText = "GRAVANDO...";
 
             try {
                 const res = await fetch(API_ACTION, {
@@ -290,118 +232,60 @@ function renderAssemblyGrid() {
                     body: JSON.stringify({ 
                         os_id: selectedOS.os_id, 
                         action: 'MONTAGEM_DIARIO', 
-                        details: `LOG DE MONTAGEM (${componente}): ${observacao}`,
-                        user_id: '8ab0d7ed-055c-4480-a1af-eb0b08894682'
+                        details: `LOG MONTAGEM (${componente}): ${observacao}`,
+                        user_id: '8ab0d7ed-055c-4480-a1af-eb0b08894682' 
                     })
                 });
 
                 if (res.ok) {
                     btn.innerText = "SALVO!";
                     btn.classList.replace('bg-turbo-teal', 'bg-emerald-600');
-                    input.classList.add('bg-emerald-50', 'border-emerald-200');
+                    input.classList.add('bg-emerald-50');
                     setTimeout(() => { 
-                        btn.disabled = false; 
-                        btn.innerText = originalText; 
+                        btn.disabled = false; btn.innerText = originalText; 
                         btn.classList.replace('bg-emerald-600', 'bg-turbo-teal');
                     }, 2000);
                 }
-            } catch (e) {
-                alert("Erro ao salvar log.");
-                btn.disabled = false;
-                btn.innerText = originalText;
-            }
+            } catch (e) { alert("Erro ao salvar no banco."); btn.disabled = false; }
         }
 
-        // --- FUNÇÃO DE HISTÓRICO (TIMELINE) ---
+        // 4. HISTÓRICO (TIMELINE)
         async function carregarLinhaDoTempo() {
-            if (!selectedOS) { alert("Selecione uma OS primeiro."); return; }
+            if (!selectedOS) return;
             const timeline = document.getElementById('timeline-container');
-            timeline.innerHTML = '<p class="text-xs text-slate-400 animate-pulse text-center py-4">Buscando rastreio...</p>';
+            timeline.innerHTML = '<p class="text-xs text-slate-400 animate-pulse text-center py-4">Buscando...</p>';
             document.getElementById('details-modal').classList.remove('hidden');
             document.getElementById('details-modal').classList.add('flex');
 
             try {
-                const { data: events } = await supabaseClient
-                    .from('history_events')
-                    .select('*')
-                    .eq('service_order_id', selectedOS.os_id)
-                    .order('timestamp', { ascending: true });
-
+                const { data: events } = await supabaseClient.from('history_events').select('*').eq('service_order_id', selectedOS.os_id).order('timestamp', { ascending: true });
                 if (events && events.length > 0) {
                     timeline.innerHTML = events.map(ev => `
                         <div class="relative pb-4 border-l-2 border-turbo-teal pl-4 ml-2">
                             <div class="absolute -left-[9px] top-1 w-4 h-4 bg-turbo-teal rounded-full border-2 border-white shadow-sm"></div>
-                            <p class="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-none">${ev.action}</p>
+                            <p class="text-[11px] font-black text-slate-800 uppercase tracking-tight">${ev.action}</p>
                             <p class="text-[10px] text-slate-500 font-medium mt-1">${new Date(ev.timestamp).toLocaleString('pt-BR')}</p>
                             ${ev.details ? `<p class="text-[9px] text-turbo-teal italic mt-1 font-bold">"${ev.details}"</p>` : ''}
                         </div>`).join('');
-                } else {
-                    timeline.innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4">Iniciando histórico...</p>';
-                }
-            } catch (err) { timeline.innerHTML = '<p class="text-xs text-red-500 text-center font-bold">ERRO DE CONEXÃO.</p>'; }
+                } else { timeline.innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-4">Iniciando histórico...</p>'; }
+            } catch (err) { timeline.innerHTML = '<p class="text-xs text-red-500 text-center">Erro de conexão.</p>'; }
         }
 
         function renderPendingParts() {
-            const container = document.getElementById('pending-parts-list');
             const badge = document.getElementById('pending-count-badge');
             const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
-
             badge.textContent = pendingItems.length;
-
-            if (pendingItems.length > 0) {
-                container.innerHTML = pendingItems.map(item => `
-                    <div class="flex items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-3"></i>
-                        <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">${item.item}</span>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = `<p class="text-xs text-center italic text-slate-400 p-4">Nenhuma peça com troca pendente.</p>`;
-            }
-        }
-
-        function checkOverallStatus() {
-            const finalizeButton = document.getElementById('btn-finalize-os');
-            const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
-
-            if (pendingItems.length === 0) {
-                finalizeButton.disabled = false;
-                finalizeButton.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
-            } else {
-                finalizeButton.disabled = true;
-                finalizeButton.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
-            }
-        }
-        
-        function togglePendingView() {
-            document.getElementById('pending-parts-list').classList.toggle('hidden');
         }
 
         function switchTab(btn, tabId) {
-            document.querySelectorAll('.tab-button').forEach(b => {
-                b.classList.remove('tab-active', 'text-slate-400');
-                b.classList.add('text-slate-400');
-            });
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('tab-active'));
             btn.classList.add('tab-active');
-            btn.classList.remove('text-slate-400');
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
         }
 
-        function updateSelectColor(el) {
-            const val = el.value;
-            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none'; // Reset
-            if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400');
-            else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500');
-            else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500');
-            else if (val === 'TROCAR') el.classList.add('bg-red-600');
-        }
-
-        async function handleFinalizeOS() {
-            if(!confirm("Concluir montagem desta turbina e liberar para teste final?")) return;
-            alert("Turbina enviada para liberação!");
-            window.location.reload();
-        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        async function handleFinalizeOS() { alert("Turbina Montada!"); location.reload(); }
     </script>
 	
 	<!-- MODAL DE HISTÓRICO (TIMELINE UNÍSSONA) -->
