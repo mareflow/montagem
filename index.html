@@ -135,310 +135,216 @@
         </button>
     </div>
 
-    <script>
-        // URLs e Variáveis Globais
-        const API_QUEUE = 'https://webhook.mareflow.com.br/webhook/production/assembly-queue';
-        const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/assembly-action';
-        let selectedOS = null;
-        let queueData = [];
+<script>
+    // URLs e Variáveis Globais
+    const API_QUEUE = 'https://webhook.mareflow.com.br/webhook/production/assembly-queue';
+    const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/assembly-action';
+    let selectedOS = null;
+    let queueData = [];
 
-        // DOSSIÊ MESTRE: Banco de Itens Sincronizado
-        const ANALYSIS_ITEMS = {
-            'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
-            'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
-            'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda'],
-            'tab4': ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores']
-        };
+    // DOSSIÊ MESTRE
+    const ANALYSIS_ITEMS = {
+        'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
+        'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
+        'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda'],
+        'tab4': ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores']
+    };
 
-        // INICIALIZAÇÃO
-        document.addEventListener('DOMContentLoaded', fetchQueue);
+    document.addEventListener('DOMContentLoaded', fetchQueue);
 
-        // FUNÇÕES PRINCIPAIS
-        async function fetchQueue() {
-            try {
-                const response = await fetch(API_QUEUE);
-                const data = await response.json();
-                queueData = Array.isArray(data) ? data : (data.data || []);
-                renderSidebar();
-            } catch (e) { console.error("Erro na Fila:", e); }
+    async function fetchQueue() {
+        try {
+            const response = await fetch(API_QUEUE);
+            const data = await response.json();
+            queueData = Array.isArray(data) ? data : (data.data || []);
+            renderSidebar();
+        } catch (e) { console.error("Erro na Fila:", e); }
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById('os-list');
+        if (queueData.length === 0) {
+            list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila de Montagem Vazia.</div>';
+            return;
         }
-
-        function renderSidebar() {
-            const list = document.getElementById('os-list');
-            if (queueData.length === 0) {
-                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila de Montagem Vazia.</div>';
-                return;
-            }
-            list.innerHTML = queueData.map(os => `
-                <div id="os-card-${os.os_id}" onclick="selectOS('${os.os_id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-sm font-black text-slate-900">${os.business_id}</span>
-                        <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
-                    </div>
-                    <p class="text-xs font-bold text-slate-700 uppercase mb-1">${os.model}</p>
-                    <p class="text-[10px] font-medium text-slate-500 uppercase truncate">${os.client}</p>
+        list.innerHTML = queueData.map(os => `
+            <div id="os-card-${os.os_id}" onclick="selectOS('${os.os_id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-sm font-black text-slate-900">${os.business_id}</span>
+                    <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
                 </div>
-            `).join('');
-        }
+                <p class="text-xs font-bold text-slate-700 uppercase mb-1">${os.model}</p>
+                <p class="text-[10px] font-medium text-slate-500 uppercase truncate">${os.client}</p>
+            </div>
+        `).join('');
+    }
 
-        function selectOS(id) {
-            selectedOS = queueData.find(o => o.os_id === id);
-            
-            document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
-            document.getElementById(`os-card-${id}`).classList.add('os-card-selected');
+    function selectOS(id) {
+        selectedOS = queueData.find(o => o.os_id === id);
+        document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
+        const card = document.getElementById(`os-card-${id}`);
+        if(card) card.classList.add('os-card-selected');
 
-            document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('main-workspace').classList.remove('hidden');
-            document.getElementById('footer-actions').classList.remove('hidden');
-            
-            document.getElementById('display-os').innerText = selectedOS.business_id;
-            document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
-            
-            // Chamadas para renderizar todos os elementos da nova arquitetura
-            renderChecklists();
-            renderAssemblyGrid();
-            renderPendingParts();
-            checkOverallStatus();
-        }
+        document.getElementById('welcome-screen').classList.add('hidden');
+        document.getElementById('main-workspace').classList.remove('hidden');
+        document.getElementById('footer-actions').classList.remove('hidden');
+        
+        document.getElementById('display-os').innerText = selectedOS.business_id;
+        document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
+        
+        renderChecklists();
+        renderAssemblyGrid();
+        renderPendingParts();
+        checkOverallStatus();
+    }
 
-        function renderChecklists() {
-            Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
-                const isBalanceTab = tabId === 'tab4';
-                const container = document.getElementById(tabId);
-                if (!container) return;
+    function renderChecklists() {
+        Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
+            const container = document.getElementById(tabId);
+            if (!container) return;
 
-                let html = '';
-                if (isBalanceTab) {
-                    // Mapeamento fixo para os campos que o n8n espera
-                    const fieldMap = {
-                        'Balan. Eixo Horário': 'montagem_conjunto',
-                        'Polim. Eixo Horário': 'polimento_eixo',
-                        'Balanc. Rotores': 'obs_gerais'
-                    };
-
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-4 items-center bg-white p-3 border border-slate-200 rounded-2xl shadow-sm">
-                            <div class="col-span-12 md:col-span-5">
-                                <label class="flex items-center cursor-pointer group">
-                                    <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
-                                    <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
-                                </label>
-                            </div>
-                            <div class="col-span-12 md:col-span-7">
-                                <input type="text" data-field="${fieldMap[item] || 'extra'}" placeholder="Observações para ${item}..." class="balance-input w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
-                            </div>
+            if (tabId === 'tab4') {
+                const fieldMap = { 'Balan. Eixo Horário': 'montagem_conjunto', 'Polim. Eixo Horário': 'polimento_eixo', 'Balanc. Rotores': 'obs_gerais' };
+                container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
+                    <div class="grid grid-cols-12 gap-4 items-center bg-white p-3 border border-slate-200 rounded-2xl shadow-sm">
+                        <div class="col-span-12 md:col-span-5">
+                            <label class="flex items-center cursor-pointer group">
+                                <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
+                                <span class="ml-4 text-xs font-black text-slate-600 uppercase">${item}</span>
+                            </label>
                         </div>
-                    `).join('');
-                } else {
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
-                            <div class="col-span-3">
-                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
-                                    <option value="PEÇA OK">PEÇA OK</option>
-                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
-                                    <option value="TROCAR">TROCAR</option>
-                                </select>
-                            </div>
-                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
-                        </div>`).join('');
-                }
-                container.innerHTML = html;
-            });
-        }
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
-                            <div class="col-span-3">
-                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
-                                    <option value="PEÇA OK">PEÇA OK</option>
-                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
-                                    <option value="TROCAR">TROCAR</option>
-                                </select>
-                            </div>
-                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
-                        </div>`).join('');
-                }
-                container.innerHTML = html;
-            });
-        }
-
-function renderAssemblyGrid() {
-            const grid = document.getElementById('assembly-grid');
-            const pieces = (selectedOS.components_to_render || []);
-
-            if (pieces.length === 0) {
-                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Nenhum componente liberado para esta OS.</p></div>';
-                return;
-            }
-
-            grid.innerHTML = pieces.map(componentName => `
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between md:gap-4" id="row-comp-${componentName}">
-                    <h4 class="text-base font-black text-slate-800 uppercase tracking-tighter md:w-32">${componentName}</h4>
-                    <div class="flex-1">
-                        <input id="obs-comp-${componentName}" oninput="validateComponentAction(this, '${componentName}')" type="text" placeholder="Adicionar observação para iniciar..." class="w-full bg-slate-50 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-blue border border-slate-200 transition">
-                    </div>
-                    <div class="flex gap-2 md:w-48">
-                        <button id="btn-start-${componentName}" disabled onclick="pieceAction('${componentName}', 'START')" class="w-full bg-turbo-blue/50 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition cursor-not-allowed">INICIAR</button>
-                        <button id="btn-finish-${componentName}" onclick="pieceAction('${componentName}', 'FINISH')" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition shadow-md">FINALIZAR</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function validateComponentAction(inputElement, componentName) {
-            const startButton = document.getElementById(`btn-start-${componentName}`);
-            if (inputElement.value.trim().length > 0) {
-                startButton.disabled = false;
-                startButton.classList.remove('bg-turbo-blue/50', 'cursor-not-allowed');
-                startButton.classList.add('bg-turbo-blue', 'hover:bg-blue-700', 'shadow-md');
-            } else {
-                startButton.disabled = true;
-                startButton.classList.add('bg-turbo-blue/50', 'cursor-not-allowed');
-                startButton.classList.remove('bg-turbo-blue', 'hover:bg-blue-700', 'shadow-md');
-            }
-        }
-
-        async function pieceAction(component, action) {
-            const obs = (action === 'START') ? document.getElementById(`obs-comp-${component}`).value : '';
-            const startBtn = document.getElementById(`btn-start-${component}`);
-            const finishBtn = document.getElementById(`btn-finish-${component}`);
-            const row = document.getElementById(`row-comp-${component}`);
-            const inputField = document.getElementById(`obs-comp-${component}`);
-
-            const buttonToDisable = (action === 'START') ? startBtn : finishBtn;
-            buttonToDisable.disabled = true;
-
-            try {
-                const res = await fetch(API_ACTION, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ os_id: selectedOS.os_id, component, action, observation: obs })
-                });
-                if(res.ok) {
-                    if(action === 'START') {
-                        startBtn.classList.add('hidden');
-                        finishBtn.classList.remove('hidden');
-                        // Trava o input após iniciar
-                        inputField.disabled = true;
-                        inputField.classList.add('bg-slate-100', 'text-slate-400');
-                    } else {
-                        row.classList.add('opacity-40', 'grayscale', 'pointer-events-none');
-                        finishBtn.innerHTML = 'CONCLUÍDO';
-                    }
-                }
-            } catch (e) { alert("Erro ao comunicar com o servidor."); }
-             finally { buttonToDisable.disabled = false; }
-        }
-
-        function renderPendingParts() {
-            const container = document.getElementById('pending-parts-list');
-            const badge = document.getElementById('pending-count-badge');
-            const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
-
-            badge.textContent = pendingItems.length;
-
-            if (pendingItems.length > 0) {
-                container.innerHTML = pendingItems.map(item => `
-                    <div class="flex items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-3"></i>
-                        <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">${item.item}</span>
+                        <div class="col-span-12 md:col-span-7">
+                            <input type="text" data-field="${fieldMap[item] || 'extra'}" placeholder="Obs para ${item}..." class="balance-input w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
+                        </div>
                     </div>
                 `).join('');
             } else {
-                container.innerHTML = `<p class="text-xs text-center italic text-slate-400 p-4">Nenhuma peça com troca pendente.</p>`;
+                container.innerHTML = ANALYSIS_ITEMS[tabId].map(item => `
+                    <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
+                        <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase ml-2">${item}</div>
+                        <div class="col-span-3">
+                            <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
+                                <option value="NÃO INFORMADO">NÃO INFORMADO</option>
+                                <option value="PEÇA OK">PEÇA OK</option>
+                                <option value="RECONDICIONAR">RECONDICIONAR</option>
+                                <option value="TROCAR">TROCAR</option>
+                            </select>
+                        </div>
+                        <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none border border-transparent"></div>
+                    </div>`).join('');
             }
-        }
+        });
+    }
 
-        function checkOverallStatus() {
-            const finalizeButton = document.getElementById('btn-finalize-os');
-            const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
-
-            if (pendingItems.length === 0) {
-                finalizeButton.disabled = false;
-                finalizeButton.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
-            } else {
-                finalizeButton.disabled = true;
-                finalizeButton.classList.add('opacity-50', 'grayscale', 'cursor-not-allowed');
-            }
+    function renderAssemblyGrid() {
+        const grid = document.getElementById('assembly-grid');
+        const pieces = (selectedOS.components_to_render || []);
+        if (pieces.length === 0) {
+            grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic">Nenhum componente liberado.</p></div>';
+            return;
         }
-        
-        function togglePendingView() {
-            document.getElementById('pending-parts-list').classList.toggle('hidden');
-        }
+        grid.innerHTML = pieces.map(comp => `
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:flex md:items-center md:justify-between md:gap-4" id="row-comp-${comp}">
+                <h4 class="text-base font-black text-slate-800 uppercase md:w-32">${comp}</h4>
+                <div class="flex-1"><input id="obs-comp-${comp}" oninput="validateComponentAction(this, '${comp}')" type="text" placeholder="Obs para iniciar..." class="w-full bg-slate-50 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-blue border border-slate-200"></div>
+                <div class="flex gap-2 md:w-48">
+                    <button id="btn-start-${comp}" disabled onclick="pieceAction('${comp}', 'START')" class="w-full bg-turbo-blue/50 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px] cursor-not-allowed">INICIAR</button>
+                    <button id="btn-finish-${comp}" onclick="pieceAction('${comp}', 'FINISH')" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px]">FINALIZAR</button>
+                </div>
+            </div>
+        `).join('');
+    }
 
-        function switchTab(btn, tabId) {
-            document.querySelectorAll('.tab-button').forEach(b => {
-                b.classList.remove('tab-active', 'text-slate-400');
-                b.classList.add('text-slate-400');
+    function validateComponentAction(input, comp) {
+        const btn = document.getElementById(`btn-start-${comp}`);
+        const isValid = input.value.trim().length > 0;
+        btn.disabled = !isValid;
+        btn.className = isValid ? 'w-full bg-turbo-blue hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px]' : 'w-full bg-turbo-blue/50 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px] cursor-not-allowed';
+    }
+
+    async function pieceAction(component, action) {
+        const obs = (action === 'START') ? document.getElementById(`obs-comp-${component}`).value : '';
+        try {
+            const res = await fetch(API_ACTION, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ os_id: selectedOS.os_id, component, action, observation: obs })
             });
-            btn.classList.add('tab-active');
-            btn.classList.remove('text-slate-400');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-        }
-
-        function updateSelectColor(el) {
-            const val = el.value;
-            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none'; // Reset
-            if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400');
-            else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500');
-            else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500');
-            else if (val === 'TROCAR') el.classList.add('bg-red-600');
-        }
-
-        async function handleFinalizeOS() {
-            if (!selectedOS) return;
-            if (!confirm("Confirmar fechamento da montagem? A OS será enviada para o Controle de Qualidade.")) return;
-
-            const btn = document.getElementById('btn-finalize-os');
-            const originalText = btn.innerText;
-            
-            // Bloqueia o botão para evitar cliques duplos
-            btn.disabled = true;
-            btn.innerText = "ENVIANDO...";
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            // Coleta os dados de balanceamento da Aba 4
-            const balanceData = {};
-            document.querySelectorAll('.balance-input').forEach(input => {
-                const fieldName = input.getAttribute('data-field');
-                balanceData[fieldName] = input.value || 'N/A';
-            });
-
-            const payload = {
-                os_id: selectedOS.os_id,
-                action: 'FINALIZE_ASSEMBLY', // Identificador opcional para o n8n
-                balance_data: balanceData
-            };
-
-            try {
-                const response = await fetch(API_ACTION, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    alert("✅ Montagem Finalizada! A OS agora está no setor de Qualidade.");
-                    window.location.reload();
+            if(res.ok) {
+                if(action === 'START') {
+                    document.getElementById(`btn-start-${component}`).classList.add('hidden');
+                    document.getElementById(`btn-finish-${component}`).classList.remove('hidden');
+                    document.getElementById(`obs-comp-${component}`).disabled = true;
                 } else {
-                    const errorData = await response.json();
-                    alert("❌ Erro ao finalizar: " + (errorData.message || "Servidor não respondeu corretamente."));
-                    btn.disabled = false;
-                    btn.innerText = originalText;
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    document.getElementById(`row-comp-${component}`).classList.add('opacity-40', 'grayscale', 'pointer-events-none');
                 }
-            } catch (error) {
-                console.error("Erro no envio:", error);
-                alert("❌ Falha de conexão com o servidor de produção.");
-                btn.disabled = false;
-                btn.innerText = originalText;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
+        } catch (e) { alert("Erro na ação."); }
+    }
+
+    function renderPendingParts() {
+        const container = document.getElementById('pending-parts-list');
+        const badge = document.getElementById('pending-count-badge');
+        const pending = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
+        badge.textContent = pending.length;
+        container.innerHTML = pending.length > 0 ? pending.map(item => `<div class="p-2 bg-slate-50 rounded-lg text-xs font-bold text-slate-600 uppercase">⚠️ ${item.item}</div>`).join('') : '<p class="text-xs text-center italic p-4">Nenhuma peça pendente.</p>';
+    }
+
+    function checkOverallStatus() {
+        const btn = document.getElementById('btn-finalize-os');
+        const hasPending = (selectedOS.analise_previa || []).some(item => item.veredito === 'TROCAR');
+        btn.disabled = hasPending;
+        btn.className = hasPending ? 'bg-slate-400 text-white px-12 py-5 rounded-3xl font-black uppercase text-sm cursor-not-allowed opacity-50' : 'bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase text-sm shadow-2xl transition-all transform hover:-translate-y-1';
+        if(hasPending) btn.title = "Existem peças pendentes de troca!";
+    }
+
+    function switchTab(btn, tabId) {
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('tab-active', 'text-turbo-teal'));
+        btn.classList.add('tab-active', 'text-turbo-teal');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
+    }
+
+    function updateSelectColor(el) {
+        const colors = { 'NÃO INFORMADO': 'bg-slate-400', 'PEÇA OK': 'bg-emerald-500', 'RECONDICIONAR': 'bg-yellow-500', 'TROCAR': 'bg-red-600' };
+        el.className = `w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none ${colors[el.value]}`;
+    }
+
+    function togglePendingView() { document.getElementById('pending-parts-list').classList.toggle('hidden'); }
+
+    async function handleFinalizeOS() {
+        if (!selectedOS) return;
+        if (!confirm("Confirmar fechamento? A OS irá para Qualidade.")) return;
+
+        const btn = document.getElementById('btn-finalize-os');
+        btn.disabled = true;
+        btn.innerText = "ENVIANDO...";
+
+        const balanceData = {};
+        document.querySelectorAll('.balance-input').forEach(input => {
+            balanceData[input.getAttribute('data-field')] = input.value || 'N/A';
+        });
+
+        try {
+            const response = await fetch(API_ACTION, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ os_id: selectedOS.os_id, balance_data: balanceData })
+            });
+
+            if (response.ok) {
+                alert("✅ Sucesso! Turbina enviada para Qualidade.");
+                window.location.reload();
+            } else {
+                alert("❌ Erro no servidor.");
+                btn.disabled = false;
+                btn.innerText = "Concluir Montagem";
+            }
+        } catch (e) {
+            alert("❌ Erro de conexão.");
+            btn.disabled = false;
         }
-    </script>
+    }
+</script>
 </body>
 </html>
