@@ -204,13 +204,18 @@
         function renderChecklists() {
             Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
                 const isBalanceTab = tabId === 'tab4';
-                // Correção: Aponta para o container principal da aba correta
                 const container = document.getElementById(tabId);
                 if (!container) return;
 
                 let html = '';
                 if (isBalanceTab) {
-                    // Lógica para checklist com campo de observação individual
+                    // Mapeamento fixo para os campos que o n8n espera
+                    const fieldMap = {
+                        'Balan. Eixo Horário': 'montagem_conjunto',
+                        'Polim. Eixo Horário': 'polimento_eixo',
+                        'Balanc. Rotores': 'obs_gerais'
+                    };
+
                     html = ANALYSIS_ITEMS[tabId].map(item => `
                         <div class="grid grid-cols-12 gap-4 items-center bg-white p-3 border border-slate-200 rounded-2xl shadow-sm">
                             <div class="col-span-12 md:col-span-5">
@@ -220,12 +225,28 @@
                                 </label>
                             </div>
                             <div class="col-span-12 md:col-span-7">
-                                <input type="text" placeholder="Observações..." class="w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
+                                <input type="text" data-field="${fieldMap[item] || 'extra'}" placeholder="Observações para ${item}..." class="balance-input w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
                             </div>
                         </div>
                     `).join('');
                 } else {
-                    // Lógica para checklist de veredito (Abas 1, 2, 3) - Mantida
+                    html = ANALYSIS_ITEMS[tabId].map(item => `
+                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
+                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
+                            <div class="col-span-3">
+                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
+                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
+                                    <option value="PEÇA OK">PEÇA OK</option>
+                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
+                                    <option value="TROCAR">TROCAR</option>
+                                </select>
+                            </div>
+                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
+                        </div>`).join('');
+                }
+                container.innerHTML = html;
+            });
+        }
                     html = ANALYSIS_ITEMS[tabId].map(item => `
                         <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
                             <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
@@ -369,9 +390,54 @@ function renderAssemblyGrid() {
         }
 
         async function handleFinalizeOS() {
-            if(!confirm("Concluir montagem desta turbina e liberar para teste final?")) return;
-            alert("Turbina enviada para liberação!");
-            window.location.reload();
+            if (!selectedOS) return;
+            if (!confirm("Confirmar fechamento da montagem? A OS será enviada para o Controle de Qualidade.")) return;
+
+            const btn = document.getElementById('btn-finalize-os');
+            const originalText = btn.innerText;
+            
+            // Bloqueia o botão para evitar cliques duplos
+            btn.disabled = true;
+            btn.innerText = "ENVIANDO...";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Coleta os dados de balanceamento da Aba 4
+            const balanceData = {};
+            document.querySelectorAll('.balance-input').forEach(input => {
+                const fieldName = input.getAttribute('data-field');
+                balanceData[fieldName] = input.value || 'N/A';
+            });
+
+            const payload = {
+                os_id: selectedOS.os_id,
+                action: 'FINALIZE_ASSEMBLY', // Identificador opcional para o n8n
+                balance_data: balanceData
+            };
+
+            try {
+                const response = await fetch(API_ACTION, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("✅ Montagem Finalizada! A OS agora está no setor de Qualidade.");
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert("❌ Erro ao finalizar: " + (errorData.message || "Servidor não respondeu corretamente."));
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            } catch (error) {
+                console.error("Erro no envio:", error);
+                alert("❌ Falha de conexão com o servidor de produção.");
+                btn.disabled = false;
+                btn.innerText = originalText;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
         }
     </script>
 </body>
