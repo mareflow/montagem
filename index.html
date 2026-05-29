@@ -258,13 +258,12 @@
                 // ETAPA 2: CARCAÇAMENTO (Exclui a CCE que já foi para o núcleo)
                 document.getElementById('assembly-step-badge').innerText = "Etapa 2: Carcaçamento (Housings)";
                 
-                // Busca blindada contra letras maiúsculas/minúsculas
+                // Busca blindada contra letras maiúsculas/minúsculas (removida a referência ao Coletor)
                 const ct = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CT');
                 const cco = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCO');
-                const coletor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'COLETOR');
 
-                // Garante que os cards das carcaças fiquem sempre visíveis em cinza/verde
-                const pecas = { CT: ct, CCO: cco, Coletor: coletor };
+                // Garante que os cards das carcaças fiquem sempre visíveis em cinza/verde (CT e CCO)
+                const pecas = { CT: ct, CCO: cco };
                 renderPecasCards(pecas);
 
                 // O Carcaçamento depende apenas da CT e CCO
