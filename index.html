@@ -82,7 +82,7 @@
                     </div>
                 </div>
 
-                <!-- CARDS DE COMPONENTES DA MONTAGEM (DINÂMICOS) -->
+                <!-- CARDS DE COMPONENTES DA MONTAGEM -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Verificação Física no Setor</span>
@@ -90,7 +90,7 @@
                     </div>
 
                     <!-- GRID DE CARDS DAS PEÇAS -->
-                    <div id="dynamic-pieces-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div id="dynamic-pieces-grid" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Gerado dinamicamente via JS -->
                     </div>
 
@@ -121,8 +121,6 @@
                 <button id="modal-confirm-btn" class="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition">Confirmar</button>
             </div>
         </div>
-    </div>
-
     </div>
 
     <!-- Biblioteca Supabase -->
@@ -226,18 +224,20 @@
             );
 
             if (!isConjuntoBalanceado) {
-                // ETAPA 1: MONTAGEM DO CONJUNTO ROTATIVO
+                // ETAPA 1: MONTAGEM DO CONJUNTO ROTATIVO (4 Componentes obrigatórios do Tales)
                 document.getElementById('assembly-step-badge').innerText = "Etapa 1: Conjunto Rotativo";
                 
                 // Busca blindada contra letras maiúsculas/minúsculas
                 const eixo = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'EIXO');
                 const rotor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'ROTOR');
+                const cce = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCE');
                 const reparos = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'REPAROS');
 
-                const pecas = { Eixo: eixo, Rotor: rotor, Reparos: reparos };
+                const pecas = { Eixo: eixo, Rotor: rotor, CCE: cce, Reparos: reparos };
                 renderPecasCards(pecas);
 
-                const todosDisponiveis = [eixo, rotor, reparos].every(p => {
+                // Valida as 4 peças de engenharia
+                const todosDisponiveis = [eixo, rotor, cce, reparos].every(p => {
                     const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
                     return stage === 'MONTAGEM';
                 });
@@ -246,16 +246,16 @@
                 const btnIniciar = document.getElementById('btn-iniciar-torque');
 
                 if (todosDisponiveis) {
-                    bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● TODAS AS 3 PEÇAS ESTÃO NA MONTAGEM!</span>`;
+                    bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● TODAS AS 4 PEÇAS DO NÚCLEO ESTÃO NA MONTAGEM!</span>`;
                     btnIniciar.disabled = false;
                     btnIniciar.className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
                 } else {
-                    bannerStatus.innerHTML = `<span class="text-amber-500 font-black text-xs uppercase tracking-widest">▲ AGUARDANDO CHEGADA DE TODAS AS PEÇAS NO SETOR</span>`;
+                    bannerStatus.innerHTML = `<span class="text-amber-500 font-black text-xs uppercase tracking-widest">▲ AGUARDANDO CHEGADA DAS PEÇAS DO NÚCLEO NO SETOR</span>`;
                     btnIniciar.disabled = true;
                     btnIniciar.className = 'w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed';
                 }
             } else {
-                // ETAPA 2: CARCAÇAMENTO
+                // ETAPA 2: CARCAÇAMENTO (Exclui a CCE que já foi para o núcleo)
                 document.getElementById('assembly-step-badge').innerText = "Etapa 2: Carcaçamento (Housings)";
                 
                 // Busca blindada contra letras maiúsculas/minúsculas
@@ -263,10 +263,11 @@
                 const cco = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCO');
                 const coletor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'COLETOR');
 
-                // Garante que os 3 cards das carcaças (CT, CCO e Coletor) fiquem sempre visíveis (cinza/verde) igual à Etapa 1
+                // Garante que os cards das carcaças fiquem sempre visíveis em cinza/verde
                 const pecas = { CT: ct, CCO: cco, Coletor: coletor };
                 renderPecasCards(pecas);
 
+                // O Carcaçamento depende apenas da CT e CCO
                 const carcasasProntas = [ct, cco].every(p => {
                     const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
                     return stage === 'MONTAGEM';
@@ -290,6 +291,11 @@
 
         function renderPecasCards(pecasObj) {
             const grid = document.getElementById('dynamic-pieces-grid');
+            
+            // Ajusta a largura das colunas dinamicamente baseado em 3 ou 4 peças na tela
+            const colsCount = Object.keys(pecasObj).length;
+            grid.className = `grid grid-cols-1 md:grid-cols-${colsCount} gap-6`;
+
             grid.innerHTML = Object.keys(pecasObj).map(nome => {
                 const p = pecasObj[nome];
                 const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
