@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Setor Montagem | TurboSul</title>
+    <title>Setor Montagem | TurboSul - Controle de Produção</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -15,7 +18,6 @@
         .bg-turbo-blue { background-color: #2563EB; }
         .bg-turbo-orange { background-color: #EA580C; }
         .os-card-selected { border-left: 4px solid #2563EB !important; background-color: #f0f9ff !important; }
-        .tab-active { border-bottom: 2px solid #0D9488; color: #0D9488; font-weight: 800; }
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -56,7 +58,7 @@
         <!-- MAIN -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 custom-scroll">
             <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-slate-400">
-                <i class="fa-solid fa-box-open text-6xl mb-4 opacity-10"></i>
+                <i class="fa-solid fa-screwdriver-wrench text-6xl mb-4 opacity-10"></i>
                 <p class="uppercase tracking-widest font-bold text-sm">Selecione uma OS para Iniciar</p>
             </div>
 
@@ -80,88 +82,68 @@
                     </div>
                 </div>
 
-                <!-- CHECKLISTS (ABAS) -->
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 border-b bg-slate-50 flex space-x-8 overflow-x-auto">
-                        <button onclick="switchTab(this, 'tab1')" class="tab-button tab-active py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">1. Anexos (Itens Externos)</button>
-                        <button onclick="switchTab(this, 'tab2')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">2. Reparos Gerais</button>
-                        <button onclick="switchTab(this, 'tab3')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">3. Caracol (Caixa Quente)</button>
-                        <button onclick="switchTab(this, 'tab4')" class="tab-button text-slate-400 py-2 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">4. Balanceamento e Finalização</button>
+                <!-- CARDS DE COMPONENTES DA MONTAGEM (DINÂMICOS) -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Verificação Física no Setor</span>
+                        <span id="assembly-step-badge" class="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-full tracking-wider">Etapa 1: Conjunto Rotativo</span>
                     </div>
-                    <div class="p-6 max-h-[500px] overflow-y-auto custom-scroll">
-                        <div id="tab1" class="tab-content space-y-1"></div>
-                        <div id="tab2" class="tab-content hidden space-y-1"></div>
-                        <div id="tab3" class="tab-content hidden space-y-1"></div>
-                        <div id="tab4" class="tab-content hidden space-y-3"></div>
-                    </div>
-                </div>
 
-                <!-- MONITOR DE COMPONENTES E PENDÊNCIAS -->
-                <div class="space-y-6 pt-6 border-t border-slate-200">
-                    
-                    <!-- Botão de Alerta de Peças Pendentes -->
-                    <div>
-                        <button id="toggle-pending-btn" onclick="togglePendingView()" class="w-full flex justify-between items-center bg-amber-100 text-amber-800 p-4 rounded-2xl border-2 border-amber-200 hover:bg-amber-200/60 transition shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <span class="text-xs font-black uppercase tracking-wider">Monitor de Peças Pendentes</span>
-                            </div>
-                            <span id="pending-count-badge" class="px-3 py-1 bg-amber-500 text-white text-xs font-black rounded-full">0</span>
-                        </button>
-                        <div id="pending-parts-list" class="hidden mt-3 bg-white p-4 rounded-2xl border border-slate-200 space-y-2 max-h-48 overflow-y-auto custom-scroll">
-                            <!-- Lista de peças pendentes será inserida aqui -->
+                    <!-- GRID DE CARDS DAS PEÇAS -->
+                    <div id="dynamic-pieces-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Gerado dinamicamente via JS -->
+                    </div>
+
+                    <!-- BANNER E AÇÃO DA MONTAGEM -->
+                    <div id="assembly-action-card" class="bg-slate-50 border border-slate-200 rounded-3xl p-6 text-center space-y-4">
+                        <div id="banner-status-montagem" class="text-xs font-black uppercase text-slate-500">
+                            Aguardando peças básicas...
                         </div>
-                    </div>
-
-                    <!-- Painel de Ação de Montagem -->
-                    <div>
-                         <h3 class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 ml-2 italic">Componentes Liberados para Montagem:</h3>
-                         <div id="assembly-grid" class="space-y-4 pb-32"></div>
+                        <button id="btn-iniciar-torque" onclick="confirmarEtapaMontagem()" disabled class="w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed">
+                            Iniciar Torque e Montagem
+                        </button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- BOTÃO GLOBAL FINAL -->
-    <div id="footer-actions" class="fixed bottom-0 right-0 p-8 z-30 hidden">
-        <button id="btn-finalize-os" onclick="handleFinalizeOS()" class="bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1">
-            Concluir Montagem e Liberar Turbina
-        </button>
+    <!-- MODAL DE CONFIRMAÇÃO DE ETAPA -->
+    <div id="custom-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
+        <div id="modal-card" class="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center">
+            <div id="modal-icon" class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-circle-question text-3xl"></i>
+            </div>
+            <h3 id="modal-title" class="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">Avançar Produção?</h3>
+            <p id="modal-desc" class="text-sm text-slate-500 font-medium mb-8 leading-relaxed">Você está prestes a concluir esta etapa e rotear o componente.</p>
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-4 px-6 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition">Cancelar</button>
+                <button id="modal-confirm-btn" class="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg transition">Confirmar</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // URLs e Variáveis Globais
         const API_QUEUE = 'https://webhook.mareflow.com.br/webhook/production/assembly-queue';
-        const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/assembly-action';
+        const API_ACTION = 'https://webhook.mareflow.com.br/webhook/production/component-routing';
         let selectedOS = null;
         let queueData = [];
 
-        // DOSSIÊ MESTRE: Banco de Itens Sincronizado
-        const ANALYSIS_ITEMS = {
-            'tab1': ['Travas CCO', 'Travas CT', 'Parafuso CT Flangeado', 'Parafuso CCO Flangeado', 'Cano Retorno Parafusos', 'Adaptador Lubrificação', 'Nipel de Lubrificação', 'Cano Lubrificação com Nipel', 'Atuador Pressão', 'Atuador Vácuo', 'Atuador Vácuo Eletrônico', 'Atuador Eletrônico com Haste', 'Suporte Atuador Eletrônico', 'Calço Atuador', 'Chapa de Proteção Atuador', 'Parafusos Suporte Atuador', 'Parafusos Chapa Proteção', 'Mangueira na CCO', 'Prisioneiro Saída', 'Prisioneiro Pé Mesa CT', 'Prisioneiro CCE', 'Parafuso CCE', 'Prisioneiro CCO', 'Prisioneiro Especial Longo', 'Saída de Escape', 'Flange Saída CT', 'Chapa de Proteção CT', 'Freio Motor', 'Chapa de Proteção Saída', 'Nipel Fixo na CCO', 'Nipel Roscado na CCO', 'Nipel com Parafuso OCO', 'Olhal', 'Parafuso OCO', 'Coletor', 'Cinta CT CCE', 'Cinta CCO', 'Cinta Saída', 'Flange Pé Mesa CT', 'Cano Admissão CCO', 'Cano Admissão Motor', 'Cano de Água', 'Valvula Prioritária', 'Valvula Solenóide', 'Sonda Temp Pressão', 'Sensor PVF', 'Bocal Plástico Biturbo', 'Tampão CT', 'Arruela Plástica Biturbo', 'Bocal Alumínio Biturbo', 'Luva Borracha Biturbo', 'Cano Ligação Alumínio', 'Capa Alumínio Biturbo', 'Peça Alumínio com Mola', 'Juntas', 'Almofada Amianto Saída', 'Mangueira Atuador', 'Conexão T', 'Defletor Admissão com Trava', 'Abraçadeiras', 'Capa Protetiva Alumínio', 'Nipel de Retorno', 'Mangueira de Retorno', 'Suporte CT', 'Anel Cano Retorno', 'Parafuso União Biturbo', 'Valvula Pressão Partida', 'Oring', 'Valvula Sensor Partida', 'Mangueira Bocal Alumínio'],
-            'tab2': ['Mancal Radial', 'Mancal Encosto', 'Flange', 'Colar', 'Espaçador', 'Calço Arruela', 'Defletor de Óleo', 'Protetor Térmico', 'Travas de Mancal CCE', 'Trava Aranha Mancal', 'Trava de Flange', 'Calço de Altura no Rotor', 'Porca do Eixo', 'Almofada Vedação Eixo', 'Almofada Vedação Caracol', 'Arruela Metálica Vedação', 'Geometria Variável TGV', 'Flange da TGV', 'Viton', 'Aneis Vedação Flange TGV', 'Anel Assentamento Valvula Biturbo'],
-            'tab3': ['Trinca Base Face ou Gases', 'Quebra Base Face', 'Espessura da Base Minima 9mm', 'Embuchamento da CT', 'Desgaste Saida Escape Flangeada', 'Desgaste Face Encaixe CCE', 'Trinca Face Assentamento CCE', 'Trinca Parede Lateral Protetor', 'Trinca ou Quebra da Voluta', 'Borboleta ou Moeda Folga', 'Bucha Guia Borboleta', 'Braco Wastegate', 'Pino de Centro', 'Assentamento Borboleta Moeda', 'Coletor Anexo', 'Plaina Coletor Uniao Biturbo', 'Empenamento Faces Alojamento', 'Necessita Gabarito Usinagem', 'Tipo de Solda'],
-            'tab4': ['Balan. Eixo Horário', 'Polim. Eixo Horário', 'Balanc. Rotores']
-        };
+        window.addEventListener('load', fetchQueue);
 
-        // INICIALIZAÇÃO
-        document.addEventListener('DOMContentLoaded', fetchQueue);
-
-        // FUNÇÕES PRINCIPAIS
         async function fetchQueue() {
             try {
                 const response = await fetch(API_QUEUE);
                 const data = await response.json();
                 queueData = Array.isArray(data) ? data : (data.data || []);
                 renderSidebar();
-            } catch (e) { console.error("Erro na Fila:", e); }
+            } catch (e) { console.error("Erro na fila:", e); }
         }
 
         function renderSidebar() {
             const list = document.getElementById('os-list');
             if (queueData.length === 0) {
-                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila de Montagem Vazia.</div>';
+                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila Vazia.</div>';
                 return;
             }
             list.innerHTML = queueData.map(os => `
@@ -184,273 +166,153 @@
 
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('main-workspace').classList.remove('hidden');
-            document.getElementById('footer-actions').classList.remove('hidden');
             
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
-            renderChecklists();
-            renderAssemblyGrid();
-            renderPendingParts();
-            checkOverallStatus();
+            atualizarWorkspaceMontagem();
         }
 
-        function renderChecklists() {
-            Object.keys(ANALYSIS_ITEMS).forEach(tabId => {
-                const isBalanceTab = tabId === 'tab4';
-                const container = document.getElementById(tabId);
-                if (!container) return;
+        function atualizarWorkspaceMontagem() {
+            const tracking = selectedOS.full_tracking || selectedOS.tracking || [];
+            
+            // Verifica o status do Conjunto Rotativo no tracking
+            const conjuntoRotativo = tracking.find(t => t.component_name === 'Conjunto Rotativo' || t.component === 'Conjunto Rotativo');
+            const isConjuntoBalanceado = conjuntoRotativo && (conjuntoRotativo.status === 'Finalizado' || conjuntoRotativo.status === 'BALANCEADO');
 
-                let html = '';
-                if (isBalanceTab) {
-                    // Mapeamento para o n8n capturar os campos da Aba 4
-                    const fieldMap = {
-                        'Balan. Eixo Horário': 'montagem_conjunto',
-                        'Polim. Eixo Horário': 'polimento_eixo',
-                        'Balanc. Rotores': 'obs_gerais'
-                    };
+            if (!isConjuntoBalanceado) {
+                // ETAPA 1: MONTAGEM DO CONJUNTO ROTATIVO
+                document.getElementById('assembly-step-badge').innerText = "Etapa 1: Conjunto Rotativo";
+                
+                const eixo = tracking.find(t => t.component_name === 'Eixo' || t.component === 'Eixo');
+                const rotor = tracking.find(t => t.component_name === 'Rotor' || t.component === 'Rotor');
+                const reparos = tracking.find(t => t.component_name === 'Reparos' || t.component === 'Reparos');
 
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-4 items-center bg-white p-3 border border-slate-200 rounded-2xl shadow-sm">
-                            <div class="col-span-12 md:col-span-5">
-                                <label class="flex items-center cursor-pointer group">
-                                    <input type="checkbox" class="w-5 h-5 text-turbo-teal border-slate-300 rounded focus:ring-turbo-teal">
-                                    <span class="ml-4 text-xs font-black text-slate-600 uppercase group-hover:text-turbo-teal transition">${item}</span>
-                                </label>
-                            </div>
-                            <div class="col-span-12 md:col-span-7">
-                                <input type="text" data-field="${fieldMap[item] || 'extra'}" placeholder="Observações para ${item}..." class="balance-input w-full bg-slate-100 text-slate-600 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-teal border border-transparent">
-                            </div>
-                        </div>
-                    `).join('');
+                const pecas = { Eixo: eixo, Rotor: rotor, Reparos: reparos };
+                renderPecasCards(pecas);
+
+                const todosDisponiveis = [eixo, rotor, reparos].every(p => p && p.current_stage === 'MONTAGEM');
+                const bannerStatus = document.getElementById('banner-status-montagem');
+                const btnIniciar = document.getElementById('btn-iniciar-torque');
+
+                if (todosDisponiveis) {
+                    bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● TODAS AS 3 PEÇAS ESTÃO NA MONTAGEM!</span>`;
+                    btnIniciar.disabled = false;
+                    btnIniciar.className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
                 } else {
-                    // Layout para as abas 1, 2 e 3
-                    html = ANALYSIS_ITEMS[tabId].map(item => `
-                        <div class="grid grid-cols-12 gap-3 items-center bg-white p-2 border-b border-slate-50 hover:bg-slate-50 transition">
-                            <div class="col-span-5 text-[10px] font-bold text-slate-600 uppercase tracking-tighter ml-2">${item}</div>
-                            <div class="col-span-3">
-                                <select onchange="updateSelectColor(this)" class="w-full bg-slate-400 text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none">
-                                    <option value="NÃO INFORMADO">NÃO INFORMADO</option>
-                                    <option value="PEÇA OK">PEÇA OK</option>
-                                    <option value="RECONDICIONAR">RECONDICIONAR</option>
-                                    <option value="TROCAR">TROCAR</option>
-                                </select>
-                            </div>
-                            <div class="col-span-4"><input type="text" placeholder="Obs..." class="w-full bg-slate-100 text-slate-500 text-[10px] rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-turbo-teal border border-transparent"></div>
-                        </div>`).join('');
+                    bannerStatus.innerHTML = `<span class="text-amber-500 font-black text-xs uppercase tracking-widest">▲ AGUARDANDO CHEGADA DE TODAS AS PEÇAS NO SETOR</span>`;
+                    btnIniciar.disabled = true;
+                    btnIniciar.className = 'w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed';
                 }
-                container.innerHTML = html;
-            });
-        }
-
-        function renderAssemblyGrid() {
-            const grid = document.getElementById('assembly-grid');
-            const pieces = (selectedOS.components_to_render || []);
-
-            if (pieces.length === 0) {
-                grid.innerHTML = '<div class="p-10 border-2 border-dashed border-slate-200 rounded-3xl text-center"><p class="text-slate-400 font-bold uppercase text-xs italic tracking-widest">Nenhum componente liberado para esta OS.</p></div>';
-                return;
-            }
-
-            grid.innerHTML = pieces.map(componentName => `
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3 md:space-y-0 md:flex md:items-center md:justify-between md:gap-4" id="row-comp-${componentName}">
-                    <h4 class="text-base font-black text-slate-800 uppercase tracking-tighter md:w-32">${componentName}</h4>
-                    <div class="flex-1">
-                        <input id="obs-comp-${componentName}" oninput="validateComponentAction(this, '${componentName}')" type="text" placeholder="Adicionar observação para iniciar..." class="w-full bg-slate-50 text-sm rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-turbo-blue border border-slate-200 transition">
-                    </div>
-                    <div class="flex gap-2 md:w-48">
-                        <button id="btn-start-${componentName}" disabled onclick="pieceAction('${componentName}', 'START')" class="w-full bg-turbo-blue/50 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition cursor-not-allowed">INICIAR</button>
-                        <button id="btn-finish-${componentName}" onclick="pieceAction('${componentName}', 'FINISH')" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition shadow-md">FINALIZAR</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function validateComponentAction(inputElement, componentName) {
-            const startButton = document.getElementById(`btn-start-${componentName}`);
-            if (inputElement.value.trim().length > 0) {
-                startButton.disabled = false;
-                startButton.classList.remove('bg-turbo-blue/50', 'cursor-not-allowed');
-                startButton.classList.add('bg-turbo-blue', 'hover:bg-blue-700', 'shadow-md');
             } else {
-                startButton.disabled = true;
-                startButton.classList.add('bg-turbo-blue/50', 'cursor-not-allowed');
-                startButton.classList.remove('bg-turbo-blue', 'hover:bg-blue-700', 'shadow-md');
-            }
-        }
+                // ETAPA 2: CARCAÇAMENTO
+                document.getElementById('assembly-step-badge').innerText = "Etapa 2: Carcaçamento (Housings)";
+                
+                const ct = tracking.find(t => t.component_name === 'CT' || t.component === 'CT');
+                const cco = tracking.find(t => t.component_name === 'CCO' || t.component === 'CCO');
+                const coletor = tracking.find(t => t.component_name === 'Coletor' || t.component === 'Coletor');
 
-        async function pieceAction(component, action) {
-            const obs = (action === 'START') ? document.getElementById(`obs-comp-${component}`).value : '';
-            const startBtn = document.getElementById(`btn-start-${component}`);
-            const finishBtn = document.getElementById(`btn-finish-${component}`);
-            const row = document.getElementById(`row-comp-${component}`);
-            const inputField = document.getElementById(`obs-comp-${component}`);
+                const pecas = { CT: ct, CCO: cco, Coletor: coletor };
+                renderPecasCards(pecas);
 
-            const buttonToDisable = (action === 'START') ? startBtn : finishBtn;
-            buttonToDisable.disabled = true;
+                const carcasasProntas = [ct, cco].every(p => p && p.current_stage === 'MONTAGEM');
+                const bannerStatus = document.getElementById('banner-status-montagem');
+                const btnIniciar = document.getElementById('btn-iniciar-torque');
 
-            try {
-                const res = await fetch(API_ACTION, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ os_id: selectedOS.os_id, component, action, observation: obs })
-                });
-                if(res.ok) {
-                    if(action === 'START') {
-                        startBtn.classList.add('hidden');
-                        finishBtn.classList.remove('hidden');
-                        inputField.disabled = true;
-                        inputField.classList.add('bg-slate-100', 'text-slate-400');
-                    } else {
-                        row.classList.add('opacity-40', 'grayscale', 'pointer-events-none');
-                        finishBtn.innerHTML = 'CONCLUÍDO';
-                    }
+                if (carcasasProntas) {
+                    bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● CARCAÇAS DISPONÍVEIS PARA MONTAGEM FINAL!</span>`;
+                    btnIniciar.disabled = false;
+                    btnIniciar.className = 'w-full bg-turbo-orange hover:bg-orange-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
+                    btnIniciar.innerText = "Finalizar Carcaçamento e Enviar para Balanceamento Final";
+                } else {
+                    bannerStatus.innerHTML = `<span class="text-amber-500 font-black text-xs uppercase tracking-widest">▲ AGUARDANDO LIBERAÇÃO DAS CARCAÇAS NA MONTAGEM</span>`;
+                    btnIniciar.disabled = true;
+                    btnIniciar.className = 'w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed';
                 }
-            } catch (e) { alert("Erro ao comunicar com o servidor."); }
-             finally { buttonToDisable.disabled = false; }
-        }
-
-        function renderPendingParts() {
-            const container = document.getElementById('pending-parts-list');
-            const badge = document.getElementById('pending-count-badge');
-            const pendingItems = (selectedOS.analise_previa || []).filter(item => item.veredito === 'TROCAR');
-
-            badge.textContent = pendingItems.length;
-
-            if (pendingItems.length > 0) {
-                container.innerHTML = pendingItems.map(item => `
-                    <div class="flex items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
-                        <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-3"></i>
-                        <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">${item.item}</span>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = `<p class="text-xs text-center italic text-slate-400 p-4">Nenhuma peça com troca pendente.</p>`;
             }
         }
 
-        function checkOverallStatus() {
-            const finalizeButton = document.getElementById('btn-finalize-os');
-            finalizeButton.disabled = false;
-            finalizeButton.classList.remove('opacity-50', 'grayscale', 'cursor-not-allowed');
-            finalizeButton.className = 'bg-turbo-orange hover:bg-orange-700 text-white px-12 py-5 rounded-3xl font-black uppercase tracking-[0.2em] text-sm shadow-2xl transition-all transform hover:-translate-y-1';
-            finalizeButton.title = "";
-        }
-        
-        function togglePendingView() {
-            document.getElementById('pending-parts-list').classList.toggle('hidden');
-        }
-
-        function switchTab(btn, tabId) {
-            document.querySelectorAll('.tab-button').forEach(b => {
-                b.classList.remove('tab-active', 'text-slate-400');
-                b.classList.add('text-slate-400');
-            });
-            btn.classList.add('tab-active');
-            btn.classList.remove('text-slate-400');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-        }
-
-        function updateSelectColor(el) {
-            const val = el.value;
-            el.className = 'w-full text-white text-[9px] font-black py-2 rounded-lg uppercase text-center outline-none';
-            if (val === 'NÃO INFORMADO') el.classList.add('bg-slate-400');
-            else if (val === 'PEÇA OK') el.classList.add('bg-emerald-500');
-            else if (val === 'RECONDICIONAR') el.classList.add('bg-yellow-500');
-            else if (val === 'TROCAR') el.classList.add('bg-red-600');
+        function renderPecasCards(pecasObj) {
+            const grid = document.getElementById('dynamic-pieces-grid');
+            grid.innerHTML = Object.keys(pecasObj).map(nome => {
+                const p = pecasObj[nome];
+                const noSetor = p && p.current_stage === 'MONTAGEM';
+                if (noSetor) {
+                    return `
+                        <div class="flex flex-col items-center justify-center p-6 border-2 border-emerald-500 bg-emerald-50/30 rounded-3xl">
+                            <span class="text-xs font-black text-slate-800 tracking-tight uppercase">${nome}</span>
+                            <i class="fa-solid fa-circle-check text-emerald-500 text-4xl my-4"></i>
+                            <span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-4 py-1.5 rounded-full tracking-widest uppercase">No Setor</span>
+                        </div>`;
+                } else {
+                    const localizacao = p ? (p.current_stage || p.stage || 'Expedição') : 'Expedição';
+                    return `
+                        <div class="flex flex-col items-center justify-center p-6 border-2 border-slate-200 bg-slate-50/50 rounded-3xl opacity-60">
+                            <span class="text-xs font-black text-slate-500 tracking-tight uppercase">${nome}</span>
+                            <i class="fa-solid fa-hourglass-half text-slate-400 text-4xl my-4 animate-pulse"></i>
+                            <span class="text-[9px] font-black text-slate-500 bg-slate-200 px-4 py-1.5 rounded-full tracking-widest uppercase">Em: ${localizacao}</span>
+                        </div>`;
+                }
+            }).join('');
         }
 
-function handleFinalizeOS() {
-            if (!selectedOS) return;
-            
-            // Abre o modal customizado
+        function confirmarEtapaMontagem() {
+            const tracking = selectedOS.full_tracking || selectedOS.tracking || [];
+            const conjuntoRotativo = tracking.find(t => t.component_name === 'Conjunto Rotativo' || t.component === 'Conjunto Rotativo');
+            const isConjuntoBalanceado = conjuntoRotativo && (conjuntoRotativo.status === 'Finalizado' || conjuntoRotativo.status === 'BALANCEADO');
+
             const modal = document.getElementById('custom-modal');
-            const card = document.getElementById('modal-card');
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-            }, 10);
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
 
-            // Configura o clique do botão de confirmação dentro do modal
-            document.getElementById('modal-confirm-btn').onclick = async () => {
-                closeCustomModal();
-                await executeFinalization(); // Chama a lógica de envio
-            };
+            if (!isConjuntoBalanceado) {
+                title.innerText = "Enviar para Balanceamento?";
+                desc.innerText = "Isso montará o Conjunto Rotativo e o encaminhará para o primeiro balanceamento.";
+                confirmBtn.onclick = () => enviarProximaEtapa('BALANCEAMENTO', 'Conjunto Rotativo');
+            } else {
+                title.innerText = "Finalizar Carcaçamento?";
+                desc.innerText = "Isso finalizará o turbo completo e o enviará para o balanceamento de peça inteira.";
+                confirmBtn.onclick = () => enviarProximaEtapa('BALANCEAMENTO', 'Peça Inteira');
+            }
+
+            modal.classList.remove('hidden');
         }
 
-        // Nova função separada para a lógica de envio (limpeza de código)
-        async function executeFinalization() {
-            const btn = document.getElementById('btn-finalize-os');
-            const originalText = btn.innerText;
-            
+        async function enviarProximaEtapa(setorAlvo, tipoMontagem) {
+            closeModal();
+            const btn = document.getElementById('btn-iniciar-torque');
             btn.disabled = true;
-            btn.innerText = "PROCESSANDO...";
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            const balanceData = {};
-            document.querySelectorAll('.balance-input').forEach(input => {
-                const fieldName = input.getAttribute('data-field');
-                balanceData[fieldName] = input.value || 'N/A';
-            });
-
-            const payload = {
-                os_id: selectedOS.os_id,
-                action: 'FINALIZE_ASSEMBLY',
-                balance_data: balanceData
-            };
+            btn.innerText = "ENVIANDO...";
 
             try {
                 const response = await fetch(API_ACTION, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        os_id: selectedOS.os_id,
+                        component: tipoMontagem,
+                        target: setorAlvo,
+                        executed_services: [tipoMontagem === 'Conjunto Rotativo' ? 'Montagem de Núcleo' : 'Carcaçamento Completo']
+                    })
                 });
 
                 if (response.ok) {
-                    alert("✅ Montagem Finalizada com Sucesso!");
+                    alert(`✅ Enviado para ${setorAlvo} com Sucesso!`);
                     window.location.reload();
                 } else {
-                    alert("❌ Erro ao comunicar com servidor.");
+                    alert("Erro ao salvar etapa.");
                     btn.disabled = false;
-                    btn.innerText = originalText;
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
-            } catch (error) {
-                alert("❌ Falha de conexão.");
+            } catch (e) {
+                alert("Falha na conexão.");
                 btn.disabled = false;
-                btn.innerText = originalText;
             }
         }
-		
-		function closeCustomModal() {
-            const modal = document.getElementById('custom-modal');
-            const card = document.getElementById('modal-card');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
         }
-		
     </script>
-	
-	<!-- MODAL CUSTOMIZADO -->
-    <div id="custom-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-all duration-300">
-        <div id="modal-card" class="bg-white rounded-[40px] p-8 max-w-sm w-full mx-4 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 border border-slate-100">
-            <div class="text-center">
-                <div class="w-20 h-20 bg-turbo-orange/10 text-turbo-orange rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fa-solid fa-circle-question text-3xl"></i>
-                </div>
-                <h3 class="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">Finalizar OS?</h3>
-                <p class="text-sm text-slate-500 font-medium mb-8 leading-relaxed">A turbina será enviada para o setor de **Controle de Qualidade** e sairá da sua fila.</p>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeCustomModal()" class="flex-1 py-4 px-6 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition">Cancelar</button>
-                <button id="modal-confirm-btn" class="flex-1 py-4 px-6 bg-turbo-orange hover:bg-orange-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-turbo-orange/20 transition transform active:scale-95">Confirmar</button>
-            </div>
-        </div>
-    </div>
-	
 </body>
 </html>
