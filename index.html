@@ -168,7 +168,7 @@
             `).join('');
         }
 
-        function selectOS(id) {
+        async function selectOS(id) {
             selectedOS = queueData.find(o => o.os_id === id);
             
             document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
@@ -180,6 +180,24 @@
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
+            console.log("🔍 Buscando dados no Supabase para a OS ID:", selectedOS.service_order_id || selectedOS.os_id || selectedOS.id);
+
+            try {
+                const { data: trackingData, error } = await supabaseClient
+                    .from('component_tracking')
+                    .select('*')
+                    .eq('service_order_id', selectedOS.service_order_id || selectedOS.os_id || selectedOS.id);
+                
+                if (!error && trackingData) {
+                    selectedOS.full_tracking = trackingData;
+                    console.log("✅ Dados recebidos do Supabase com sucesso:", trackingData);
+                } else {
+                    console.error("❌ Erro retornado pelo Supabase:", error);
+                }
+            } catch (e) {
+                console.error("❌ Exceção ao buscar dados:", e);
+            }
+
             atualizarWorkspaceMontagem();
         }
 
