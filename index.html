@@ -209,7 +209,14 @@
                 const name = (t.component_name || t.component || '').toUpperCase();
                 return name === 'CONJUNTO ROTATIVO';
             });
-            const isConjuntoBalanceado = conjuntoRotativo && (conjuntoRotativo.status === 'Finalizado' || conjuntoRotativo.status === 'BALANCEADO');
+            
+            // CORREÇÃO: Se o Conjunto Rotativo já retornou para a MONTAGEM, ele é considerado balanceado!
+            const stageConjunto = conjuntoRotativo ? (conjuntoRotativo.target_sector || conjuntoRotativo.current_stage || conjuntoRotativo.stage || '').toUpperCase() : '';
+            const isConjuntoBalanceado = conjuntoRotativo && (
+                conjuntoRotativo.status === 'Finalizado' || 
+                conjuntoRotativo.status === 'BALANCEADO' || 
+                stageConjunto === 'MONTAGEM'
+            );
 
             if (!isConjuntoBalanceado) {
                 // ETAPA 1: MONTAGEM DO CONJUNTO ROTATIVO
