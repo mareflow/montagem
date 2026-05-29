@@ -186,25 +186,30 @@
         function atualizarWorkspaceMontagem() {
             const tracking = selectedOS.full_tracking || selectedOS.tracking || [];
             
-            // Verifica o status do Conjunto Rotativo no tracking
-            const conjuntoRotativo = tracking.find(t => t.component_name === 'Conjunto Rotativo' || t.component === 'Conjunto Rotativo');
+            // Procura se o Conjunto Rotativo foi finalizado na montagem anterior (Ignorando case)
+            const conjuntoRotativo = tracking.find(t => {
+                const name = (t.component_name || t.component || '').toUpperCase();
+                return name === 'CONJUNTO ROTATIVO';
+            });
             const isConjuntoBalanceado = conjuntoRotativo && (conjuntoRotativo.status === 'Finalizado' || conjuntoRotativo.status === 'BALANCEADO');
 
             if (!isConjuntoBalanceado) {
                 // ETAPA 1: MONTAGEM DO CONJUNTO ROTATIVO
                 document.getElementById('assembly-step-badge').innerText = "Etapa 1: Conjunto Rotativo";
                 
-                const eixo = tracking.find(t => t.component_name === 'Eixo' || t.component === 'Eixo');
-                const rotor = tracking.find(t => t.component_name === 'Rotor' || t.component === 'Rotor');
-                const reparos = tracking.find(t => t.component_name === 'Reparos' || t.component === 'Reparos');
+                // Busca blindada contra letras maiúsculas/minúsculas
+                const eixo = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'EIXO');
+                const rotor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'ROTOR');
+                const reparos = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'REPAROS');
 
                 const pecas = { Eixo: eixo, Rotor: rotor, Reparos: reparos };
                 renderPecasCards(pecas);
 
                 const todosDisponiveis = [eixo, rotor, reparos].every(p => {
-                    const stage = p ? (p.target_sector || p.current_stage || p.stage) : '';
-                    return stage === 'MONTAGEM' || stage === 'Montagem';
+                    const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
+                    return stage === 'MONTAGEM';
                 });
+
                 const bannerStatus = document.getElementById('banner-status-montagem');
                 const btnIniciar = document.getElementById('btn-iniciar-torque');
 
@@ -221,17 +226,19 @@
                 // ETAPA 2: CARCAÇAMENTO
                 document.getElementById('assembly-step-badge').innerText = "Etapa 2: Carcaçamento (Housings)";
                 
-                const ct = tracking.find(t => t.component_name === 'CT' || t.component === 'CT');
-                const cco = tracking.find(t => t.component_name === 'CCO' || t.component === 'CCO');
-                const coletor = tracking.find(t => t.component_name === 'Coletor' || t.component === 'Coletor');
+                // Busca blindada contra letras maiúsculas/minúsculas
+                const ct = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CT');
+                const cco = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCO');
+                const coletor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'COLETOR');
 
                 const pecas = { CT: ct, CCO: cco, Coletor: coletor };
                 renderPecasCards(pecas);
 
                 const carcasasProntas = [ct, cco].every(p => {
-                    const stage = p ? (p.target_sector || p.current_stage || p.stage) : '';
-                    return stage === 'MONTAGEM' || stage === 'Montagem';
+                    const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
+                    return stage === 'MONTAGEM';
                 });
+
                 const bannerStatus = document.getElementById('banner-status-montagem');
                 const btnIniciar = document.getElementById('btn-iniciar-torque');
 
@@ -252,8 +259,8 @@
             const grid = document.getElementById('dynamic-pieces-grid');
             grid.innerHTML = Object.keys(pecasObj).map(nome => {
                 const p = pecasObj[nome];
-                const stage = p ? (p.target_sector || p.current_stage || p.stage) : '';
-                const noSetor = stage === 'MONTAGEM' || stage === 'Montagem';
+                const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
+                const noSetor = stage === 'MONTAGEM';
                 if (noSetor) {
                     return `
                         <div class="flex flex-col items-center justify-center p-6 border-2 border-emerald-500 bg-emerald-50/30 rounded-3xl">
@@ -267,7 +274,7 @@
                         <div class="flex flex-col items-center justify-center p-6 border-2 border-slate-200 bg-slate-50/50 rounded-3xl opacity-60">
                             <span class="text-xs font-black text-slate-500 tracking-tight uppercase">${nome}</span>
                             <i class="fa-solid fa-hourglass-half text-slate-400 text-4xl my-4 animate-pulse"></i>
-                            <span class="text-[9px] font-black text-slate-500 bg-slate-200 px-4 py-1.5 rounded-full tracking-widest uppercase">Em: ${localizacao}</span>
+                            <span class="text-[9px] font-black text-slate-500 bg-slate-200 px-4 py-1.5 rounded-full tracking-widest uppercase">Em: ${localizacao.toUpperCase()}</span>
                         </div>`;
                 }
             }).join('');
