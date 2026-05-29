@@ -191,7 +191,10 @@
                 const pecas = { Eixo: eixo, Rotor: rotor, Reparos: reparos };
                 renderPecasCards(pecas);
 
-                const todosDisponiveis = [eixo, rotor, reparos].every(p => p && p.current_stage === 'MONTAGEM');
+                const todosDisponiveis = [eixo, rotor, reparos].every(p => {
+                    const stage = p ? (p.target_sector || p.current_stage || p.stage) : '';
+                    return stage === 'MONTAGEM' || stage === 'Montagem';
+                });
                 const bannerStatus = document.getElementById('banner-status-montagem');
                 const btnIniciar = document.getElementById('btn-iniciar-torque');
 
@@ -215,7 +218,10 @@
                 const pecas = { CT: ct, CCO: cco, Coletor: coletor };
                 renderPecasCards(pecas);
 
-                const carcasasProntas = [ct, cco].every(p => p && p.current_stage === 'MONTAGEM');
+                const carcasasProntas = [ct, cco].every(p => {
+                    const stage = p ? (p.target_sector || p.current_stage || p.stage) : '';
+                    return stage === 'MONTAGEM' || stage === 'Montagem';
+                });
                 const bannerStatus = document.getElementById('banner-status-montagem');
                 const btnIniciar = document.getElementById('btn-iniciar-torque');
 
@@ -236,7 +242,8 @@
             const grid = document.getElementById('dynamic-pieces-grid');
             grid.innerHTML = Object.keys(pecasObj).map(nome => {
                 const p = pecasObj[nome];
-                const noSetor = p && p.current_stage === 'MONTAGEM';
+                const stage = p ? (p.target_sector || p.current_stage || p.stage) : '';
+                const noSetor = stage === 'MONTAGEM' || stage === 'Montagem';
                 if (noSetor) {
                     return `
                         <div class="flex flex-col items-center justify-center p-6 border-2 border-emerald-500 bg-emerald-50/30 rounded-3xl">
@@ -245,7 +252,7 @@
                             <span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-4 py-1.5 rounded-full tracking-widest uppercase">No Setor</span>
                         </div>`;
                 } else {
-                    const localizacao = p ? (p.current_stage || p.stage || 'Expedição') : 'Expedição';
+                    const localizacao = p ? (p.target_sector || p.current_stage || p.stage || 'Expedição') : 'Expedição';
                     return `
                         <div class="flex flex-col items-center justify-center p-6 border-2 border-slate-200 bg-slate-50/50 rounded-3xl opacity-60">
                             <span class="text-xs font-black text-slate-500 tracking-tight uppercase">${nome}</span>
