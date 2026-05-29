@@ -156,23 +156,30 @@
                 list.innerHTML = '<div class="p-8 text-center text-slate-400 text-xs italic">Fila Vazia.</div>';
                 return;
             }
-            list.innerHTML = queueData.map(os => `
-                <div id="os-card-${os.os_id}" onclick="selectOS('${os.os_id}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-sm font-black text-slate-900">${os.business_id}</span>
-                        <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
+            list.innerHTML = queueData.map(os => {
+                const osId = os.service_order_id || os.os_id || os.id;
+                return `
+                    <div id="os-card-${osId}" onclick="selectOS('${osId}')" class="os-card p-4 cursor-pointer bg-white border-l-4 border-transparent hover:bg-slate-50 transition rounded-xl shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-sm font-black text-slate-900">${os.business_id}</span>
+                            <span class="px-2 py-0.5 text-[9px] font-black uppercase rounded-md bg-blue-100 text-blue-600">${os.urgency || 'Normal'}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-700 uppercase mb-1">${os.model}</p>
+                        <p class="text-[10px] font-medium text-slate-500 uppercase truncate">${os.client}</p>
                     </div>
-                    <p class="text-xs font-bold text-slate-700 uppercase mb-1">${os.model}</p>
-                    <p class="text-[10px] font-medium text-slate-500 uppercase truncate">${os.client}</p>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         async function selectOS(id) {
-            selectedOS = queueData.find(o => o.os_id === id);
+            selectedOS = queueData.find(o => {
+                const oId = o.service_order_id || o.os_id || o.id;
+                return oId === id;
+            });
             
             document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
-            document.getElementById(`os-card-${id}`).classList.add('os-card-selected');
+            const cardEl = document.getElementById(`os-card-${id}`);
+            if (cardEl) cardEl.classList.add('os-card-selected');
 
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('main-workspace').classList.remove('hidden');
@@ -256,7 +263,14 @@
                 const cco = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCO');
                 const coletor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'COLETOR');
 
-                const pecas = { CT: ct, CCO: cco, Coletor: coletor };
+                // CORREÇÃO: Cria o objeto apenas com as carcaças que fazem parte dos componentes reais de renderização da OS
+                const pecas = {};
+                const listaComponentesOS = (selectedOS.components_to_render || []).map(c => c.toUpperCase());
+                
+                if (listaComponentesOS.includes('CT')) pecas.CT = ct;
+                if (listaComponentesOS.includes('CCO')) pecas.CCO = cco;
+                if (listaComponentesOS.includes('COLETOR')) pecas.Coletor = coletor;
+
                 renderPecasCards(pecas);
 
                 const carcasasProntas = [ct, cco].every(p => {
@@ -307,8 +321,17 @@
 
         function confirmarEtapaMontagem() {
             const tracking = selectedOS.full_tracking || selectedOS.tracking || [];
-            const conjuntoRotativo = tracking.find(t => t.component_name === 'Conjunto Rotativo' || t.component === 'Conjunto Rotativo');
-            const isConjuntoBalanceado = conjuntoRotativo && (conjuntoRotativo.status === 'Finalizado' || conjuntoRotativo.status === 'BALANCEADO');
+            const conjuntoRotativo = tracking.find(t => {
+                const name = (t.component_name || t.component || '').toUpperCase();
+                return name === 'CONJUNTO ROTATIVO';
+            });
+            
+            const stageConjunto = conjuntoRotativo ? (conjuntoRotativo.target_sector || conjuntoRotativo.current_stage || conjuntoRotativo.stage || '').toUpperCase() : '';
+            const isConjuntoBalanceado = conjuntoRotativo && (
+                conjuntoRotativo.status === 'Finalizado' || 
+                conjuntoRotativo.status === 'BALANCEADO' || 
+                stageConjunto === 'MONTAGEM'
+            );
 
             const modal = document.getElementById('custom-modal');
             const title = document.getElementById('modal-title');
@@ -339,7 +362,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        os_id: selectedOS.os_id,
+                        os_id: selectedOS.service_order_id || selectedOS.os_id || selectedOS.id,
                         component: tipoMontagem,
                         target: setorAlvo,
                         executed_services: [tipoMontagem === 'Conjunto Rotativo' ? 'Montagem de Núcleo' : 'Carcaçamento Completo']
