@@ -263,14 +263,8 @@
                 const cco = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCO');
                 const coletor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'COLETOR');
 
-                // CORREÇÃO: Cria o objeto apenas com as carcaças que fazem parte dos componentes reais de renderização da OS
-                const pecas = {};
-                const listaComponentesOS = (selectedOS.components_to_render || []).map(c => c.toUpperCase());
-                
-                if (listaComponentesOS.includes('CT')) pecas.CT = ct;
-                if (listaComponentesOS.includes('CCO')) pecas.CCO = cco;
-                if (listaComponentesOS.includes('COLETOR')) pecas.Coletor = coletor;
-
+                // Garante que os 3 cards das carcaças (CT, CCO e Coletor) fiquem sempre visíveis (cinza/verde) igual à Etapa 1
+                const pecas = { CT: ct, CCO: cco, Coletor: coletor };
                 renderPecasCards(pecas);
 
                 const carcasasProntas = [ct, cco].every(p => {
