@@ -158,7 +158,7 @@
             `).join('');
         }
 
-        function selectOS(id) {
+        async function selectOS(id) {
             selectedOS = queueData.find(o => o.os_id === id);
             
             document.querySelectorAll('.os-card').forEach(c => c.classList.remove('os-card-selected'));
@@ -170,6 +170,20 @@
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
+            // BUSCA DIRETA NO SUPABASE PARA POPULAR AS PEÇAS E ATIVAR OS CARD COM SEGURANÇA
+            try {
+                const { data: trackingData, error } = await supabaseClient
+                    .from('component_tracking')
+                    .select('*')
+                    .eq('service_order_id', selectedOS.service_order_id || selectedOS.os_id || selectedOS.id);
+                
+                if (!error && trackingData) {
+                    selectedOS.full_tracking = trackingData;
+                }
+            } catch (e) {
+                console.error("Erro ao buscar rastreio dinâmico das peças:", e);
+            }
+
             atualizarWorkspaceMontagem();
         }
 
