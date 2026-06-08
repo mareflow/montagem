@@ -351,7 +351,7 @@
                             <span class="text-[9px] font-black text-emerald-700 bg-emerald-100 px-4 py-1.5 rounded-full tracking-widest uppercase">No Setor</span>
                         </div>`;
                 } else {
-                    const localizacao = p ? (p.target_sector || p.current_stage || p.stage || 'Expedição') : 'Expedição';
+                    const localizacao = p ? (p.current_stage || p.target_sector || p.stage || 'Desmontagem') : 'Desmontagem';
                     return `
                         <div class="flex flex-col items-center justify-center p-6 border-2 border-slate-200 bg-slate-50/50 rounded-3xl opacity-60">
                             <span class="text-xs font-black text-slate-500 tracking-tight uppercase">${nome}</span>
