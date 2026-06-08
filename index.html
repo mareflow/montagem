@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Setor Montagem | TurboSul - Controle de Produção</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -25,7 +22,6 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen overflow-hidden">
 
-    <!-- HEADER -->
     <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm">
         <div class="flex items-center space-x-4">
             <img src="https://i.postimg.cc/Jh5Jvrc9/IMG-7901.png" alt="TurboSul Logo" class="h-10">
@@ -44,7 +40,6 @@
     </header>
 
     <div class="flex h-[calc(100vh-64px)]">
-        <!-- SIDEBAR -->
         <aside class="w-80 bg-white border-r border-slate-200 overflow-y-auto flex-shrink-0">
             <div class="p-4 border-b border-slate-100 bg-slate-50 sticky top-0 z-10 flex justify-between items-center">
                 <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 italic">Fila de Montagem</h2>
@@ -55,7 +50,6 @@
             </div>
         </aside>
 
-        <!-- MAIN -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 custom-scroll">
             <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-slate-400">
                 <i class="fa-solid fa-screwdriver-wrench text-6xl mb-4 opacity-10"></i>
@@ -63,7 +57,6 @@
             </div>
 
             <div id="main-workspace" class="hidden space-y-6">
-                <!-- TOP INFO -->
                 <div class="flex flex-col lg:flex-row justify-between gap-6">
                     <div class="bg-turbo-teal rounded-3xl shadow-lg text-white p-6 min-h-[140px] flex-1 flex flex-col justify-center relative overflow-hidden">
                         <div class="relative z-10 ml-4">
@@ -78,29 +71,32 @@
                             <div class="p-2 bg-turbo-teal/20 rounded-xl text-turbo-teal"><i class="fa-solid fa-clock text-xl"></i></div>
                             <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Produtividade</p><p class="text-xs font-black text-white uppercase">Montagem Ativa</p></div>
                         </div>
-                        <button class="mt-4 w-full bg-turbo-teal hover:bg-teal-700 text-white py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition shadow-lg">Iniciar Limpeza Setor</button>
+                        <button id="btn-sector-cleaning" onclick="toggleSectorCleaning('MONTAGEM')" class="mt-4 w-full bg-turbo-teal hover:bg-teal-700 text-white py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition shadow-lg">Iniciar Limpeza Setor</button>
                     </div>
                 </div>
 
-                <!-- CARDS DE COMPONENTES DA MONTAGEM -->
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 space-y-6">
                     <div class="flex justify-between items-center border-b pb-4">
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Verificação Física no Setor</span>
                         <span id="assembly-step-badge" class="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-full tracking-wider">Etapa 1: Conjunto Rotativo</span>
                     </div>
 
-                    <!-- GRID DE CARDS DAS PEÇAS -->
                     <div id="dynamic-pieces-grid" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <!-- Gerado dinamicamente via JS -->
-                    </div>
+                        </div>
 
-                    <!-- BANNER E AÇÃO DA MONTAGEM -->
                     <div id="assembly-action-card" class="bg-slate-50 border border-slate-200 rounded-3xl p-6 text-center space-y-4">
                         <div id="banner-status-montagem" class="text-xs font-black uppercase text-slate-500">
                             Aguardando peças básicas...
                         </div>
-                        <button id="btn-iniciar-torque" onclick="confirmarEtapaMontagem()" disabled class="w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed">
+                        <div id="assembly-timer-container" class="hidden flex items-center justify-center space-x-3 mb-2">
+                            <span id="assembly-timer-badge" class="text-xs text-orange-600 bg-orange-50 px-3 py-1 rounded-full font-black animate-pulse border border-orange-100">00:00</span>
+                            <button type="button" id="btn-parar-montagem" onclick="pararCronometroMontagem()" class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-4 rounded-xl transition-all uppercase text-[9px] tracking-wider">Parar e Salvar</button>
+                        </div>
+                        <button id="btn-iniciar-torque" onclick="iniciarCronometroMontagem()" disabled class="w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed">
                             Iniciar Torque e Montagem
+                        </button>
+                        <button id="btn-concluir-etapa" onclick="confirmarEtapaMontagem()" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-lg">
+                            Enviar para o Balanceamento
                         </button>
                     </div>
                 </div>
@@ -108,7 +104,6 @@
         </main>
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO DE ETAPA -->
     <div id="custom-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden p-4">
         <div id="modal-card" class="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center">
             <div id="modal-icon" class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -123,7 +118,6 @@
         </div>
     </div>
 
-    <!-- Biblioteca Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Configurações Supabase
@@ -206,16 +200,11 @@
             atualizarWorkspaceMontagem();
         }
 
-        function atualizarWorkspaceMontagem() {
+        // MAPEIA E RETORNA A ETAPA ATUAL DA MONTAGEM (NÚCLEO OU CARCAÇAMENTO)
+        function getEtapaMontagemAtual() {
             const tracking = selectedOS.full_tracking || selectedOS.tracking || [];
+            const conjuntoRotativo = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CONJUNTO ROTATIVO');
             
-            // Procura se o Conjunto Rotativo foi finalizado na montagem anterior (Ignorando case)
-            const conjuntoRotativo = tracking.find(t => {
-                const name = (t.component_name || t.component || '').toUpperCase();
-                return name === 'CONJUNTO ROTATIVO';
-            });
-            
-            // CORREÇÃO: Se o Conjunto Rotativo já retornou para a MONTAGEM, ele é considerado balanceado!
             const stageConjunto = conjuntoRotativo ? (conjuntoRotativo.target_sector || conjuntoRotativo.current_stage || conjuntoRotativo.stage || '').toUpperCase() : '';
             const isConjuntoBalanceado = conjuntoRotativo && (
                 conjuntoRotativo.status === 'Finalizado' || 
@@ -223,75 +212,130 @@
                 stageConjunto === 'MONTAGEM'
             );
 
-            if (!isConjuntoBalanceado) {
-                // ETAPA 1: MONTAGEM DO CONJUNTO ROTATIVO (4 Componentes obrigatórios do Tales)
+            return isConjuntoBalanceado ? 'CARCACAMENTO' : 'NUCLEO';
+        }
+
+        function atualizarWorkspaceMontagem() {
+            const tracking = selectedOS.full_tracking || selectedOS.tracking || [];
+            const etapa = getEtapaMontagemAtual();
+
+            const bannerStatus = document.getElementById('banner-status-montagem');
+            const btnIniciar = document.getElementById('btn-iniciar-torque');
+            const btnEnviar = document.getElementById('btn-concluir-etapa');
+            const timerContainer = document.getElementById('assembly-timer-container');
+
+            // Verifica se o cronômetro para esta OS está ativo em cache
+            const timerKey = `timer_${selectedOS.id}_MONTAGEM_${etapa}`;
+            const isCronometroAtivo = localStorage.getItem(timerKey) !== null;
+
+            // Busca as observações salvas na coluna tracking_data para saber se o serviço já foi salvo
+            // Procuramos o log de tracking da peça dependendo da etapa atual (Eixo ou CT)
+            const pecaReferencia = etapa === 'NUCLEO' ? 'EIXO' : 'CT';
+            const trkRef = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === pecaReferencia);
+            const trackingData = trkRef && trkRef.tracking_data ? (typeof trkRef.tracking_data === 'string' ? JSON.parse(trkRef.tracking_data) : trkRef.tracking_data) : [];
+            const servicoNome = etapa === 'NUCLEO' ? 'Montagem de Núcleo' : 'Carcaçamento Completo';
+            const logSalvo = Array.isArray(trackingData) ? trackingData.find(log => log.service === servicoNome) : null;
+
+            if (etapa === 'NUCLEO') {
                 document.getElementById('assembly-step-badge').innerText = "Etapa 1: Conjunto Rotativo";
                 
-                // Busca blindada contra letras maiúsculas/minúsculas
                 const eixo = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'EIXO');
                 const rotor = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'ROTOR');
                 const cce = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCE');
                 const reparos = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'REPAROS');
 
-                const pecas = { Eixo: eixo, Rotor: rotor, CCE: cce, Reparos: reparos };
-                renderPecasCards(pecas);
+                renderPecasCards({ Eixo: eixo, Rotor: rotor, CCE: cce, Reparos: reparos });
 
-                // Valida as 4 peças de engenharia
                 const todosDisponiveis = [eixo, rotor, cce, reparos].every(p => {
                     const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
                     return stage === 'MONTAGEM';
                 });
 
-                const bannerStatus = document.getElementById('banner-status-montagem');
-                const btnIniciar = document.getElementById('btn-iniciar-torque');
-
-                if (todosDisponiveis) {
-                    bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● TODAS AS 4 PEÇAS DO NÚCLEO ESTÃO NA MONTAGEM!</span>`;
-                    btnIniciar.disabled = false;
-                    btnIniciar.className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
-                } else {
+                if (!todosDisponiveis) {
                     bannerStatus.innerHTML = `<span class="text-amber-500 font-black text-xs uppercase tracking-widest">▲ AGUARDANDO CHEGADA DAS PEÇAS DO NÚCLEO NO SETOR</span>`;
                     btnIniciar.disabled = true;
+                    btnIniciar.classList.remove('hidden');
                     btnIniciar.className = 'w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed';
+                    timerContainer.classList.add('hidden');
+                    btnEnviar.classList.add('hidden');
+                } else {
+                    // Controla a exibição com base no cronômetro da Montagem de Núcleo
+                    if (logSalvo) {
+                        // Tempo já foi salvo. Libera o envio.
+                        bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● MONTAGEM DE NÚCLEO CONCLUÍDA! PRONTO PARA ENVIAR</span>`;
+                        btnIniciar.classList.add('hidden');
+                        timerContainer.classList.add('hidden');
+                        btnEnviar.classList.remove('hidden');
+                    } else if (isCronometroAtivo) {
+                        // Cronômetro rodando.
+                        bannerStatus.innerHTML = `<span class="text-orange-500 font-black text-xs uppercase tracking-widest animate-pulse">● EXECUTANDO MONTAGEM DO NÚCLEO...</span>`;
+                        btnIniciar.classList.add('hidden');
+                        timerContainer.classList.remove('hidden');
+                        btnEnviar.classList.add('hidden');
+                    } else {
+                        // Pronto para iniciar.
+                        bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● TODAS AS 4 PEÇAS DISPONÍVEIS! INICIE O CRONÔMETRO</span>`;
+                        btnIniciar.disabled = false;
+                        btnIniciar.classList.remove('hidden');
+                        btnIniciar.innerText = "Iniciar Torque e Montagem";
+                        btnIniciar.className = 'w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
+                        timerContainer.classList.add('hidden');
+                        btnEnviar.classList.add('hidden');
+                    }
                 }
             } else {
-                // ETAPA 2: CARCAÇAMENTO (Exclui a CCE que já foi para o núcleo)
+                // ETAPA 2: CARCAÇAMENTO
                 document.getElementById('assembly-step-badge').innerText = "Etapa 2: Carcaçamento (Housings)";
                 
-                // Busca blindada contra letras maiúsculas/minúsculas (removida a referência ao Coletor)
                 const ct = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CT');
                 const cco = tracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'CCO');
 
-                // Garante que os cards das carcaças fiquem sempre visíveis em cinza/verde (CT e CCO)
-                const pecas = { CT: ct, CCO: cco };
-                renderPecasCards(pecas);
+                renderPecasCards({ CT: ct, CCO: cco });
 
-                // O Carcaçamento depende apenas da CT e CCO
                 const carcasasProntas = [ct, cco].every(p => {
                     const stage = p ? (p.target_sector || p.current_stage || p.stage || '').toUpperCase() : '';
                     return stage === 'MONTAGEM';
                 });
 
-                const bannerStatus = document.getElementById('banner-status-montagem');
-                const btnIniciar = document.getElementById('btn-iniciar-torque');
-
-                if (carcasasProntas) {
-                    bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● CARCAÇAS DISPONÍVEIS PARA MONTAGEM FINAL!</span>`;
-                    btnIniciar.disabled = false;
-                    btnIniciar.className = 'w-full bg-turbo-orange hover:bg-orange-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
-                    btnIniciar.innerText = "Finalizar Carcaçamento e Enviar para Balanceamento Final";
-                } else {
+                if (!carcasasProntas) {
                     bannerStatus.innerHTML = `<span class="text-amber-500 font-black text-xs uppercase tracking-widest">▲ AGUARDANDO LIBERAÇÃO DAS CARCAÇAS NA MONTAGEM</span>`;
                     btnIniciar.disabled = true;
+                    btnIniciar.classList.remove('hidden');
                     btnIniciar.className = 'w-full bg-slate-400 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all cursor-not-allowed';
+                    timerContainer.classList.add('hidden');
+                    btnEnviar.classList.add('hidden');
+                } else {
+                    // Controla a exibição com base no cronômetro do Carcaçamento
+                    if (logSalvo) {
+                        // Tempo salvo. Libera envio final.
+                        bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● CARCAÇAMENTO FINALIZADO! ENVIE PARA O BALANCEAMENTO FINAL</span>`;
+                        btnIniciar.classList.add('hidden');
+                        timerContainer.classList.add('hidden');
+                        btnEnviar.classList.remove('hidden');
+                        btnEnviar.innerText = "Enviar para o Balanceamento Final";
+                        btnEnviar.className = 'w-full bg-turbo-orange hover:bg-orange-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-lg';
+                    } else if (isCronometroAtivo) {
+                        // Cronômetro rodando.
+                        bannerStatus.innerHTML = `<span class="text-orange-500 font-black text-xs uppercase tracking-widest animate-pulse">● EXECUTANDO CARCAÇAMENTO DA TURBINA...</span>`;
+                        btnIniciar.classList.add('hidden');
+                        timerContainer.classList.remove('hidden');
+                        btnEnviar.classList.add('hidden');
+                    } else {
+                        // Pronto para iniciar.
+                        bannerStatus.innerHTML = `<span class="text-emerald-600 font-black text-xs uppercase tracking-widest">● CARCAÇAS DISPONÍVEIS! INICIE O CRONÔMETRO</span>`;
+                        btnIniciar.disabled = false;
+                        btnIniciar.classList.remove('hidden');
+                        btnIniciar.innerText = "Iniciar Carcaçamento";
+                        btnIniciar.className = 'w-full bg-turbo-orange hover:bg-orange-700 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest transition-all shadow-md';
+                        timerContainer.classList.add('hidden');
+                        btnEnviar.classList.add('hidden');
+                    }
                 }
             }
         }
 
         function renderPecasCards(pecasObj) {
             const grid = document.getElementById('dynamic-pieces-grid');
-            
-            // Ajusta a largura das colunas dinamicamente baseado em 3 ou 4 peças na tela
             const colsCount = Object.keys(pecasObj).length;
             grid.className = `grid grid-cols-1 md:grid-cols-${colsCount} gap-6`;
 
@@ -312,10 +356,102 @@
                         <div class="flex flex-col items-center justify-center p-6 border-2 border-slate-200 bg-slate-50/50 rounded-3xl opacity-60">
                             <span class="text-xs font-black text-slate-500 tracking-tight uppercase">${nome}</span>
                             <i class="fa-solid fa-hourglass-half text-slate-400 text-4xl my-4 animate-pulse"></i>
-                            <span class="text-[9px] font-black text-slate-500 bg-slate-200 px-4 py-1.5 rounded-full tracking-widest uppercase">Em: ${localizacao.toUpperCase()}</span>
+                            <span class="text-[9px] font-black text-slate-500 bg-slate-200 px-4 py-1.5 rounded-full tracking-widest uppercase font-mono">Em: ${localizacao.toUpperCase()}</span>
                         </div>`;
                 }
             }).join('');
+        }
+
+        // INICIA O CRONÔMETRO DE ACORDO COM A ETAPA CORRENTE
+        function iniciarCronometroMontagem() {
+            if (!selectedOS) return;
+            const etapa = getEtapaMontagemAtual();
+            const timerKey = `timer_${selectedOS.id}_MONTAGEM_${etapa}`;
+            localStorage.setItem(timerKey, new Date().toISOString());
+            atualizarWorkspaceMontagem();
+        }
+
+        // PARA O CRONÔMETRO E PERSISTE O TEMPO DE DUAS FORMAS DE ACORDO COM A ETAPA
+        async function pararCronometroMontagem() {
+            if (!selectedOS) return;
+            const etapa = getEtapaMontagemAtual();
+            const timerKey = `timer_${selectedOS.id}_MONTAGEM_${etapa}`;
+            const startTimeStr = localStorage.getItem(timerKey);
+
+            if (!startTimeStr) return;
+            localStorage.removeItem(timerKey);
+
+            const durationSeconds = Math.max(1, Math.floor((new Date() - new Date(startTimeStr)) / 1000));
+            
+            // Decisão dinâmica de componente e serviço baseado na Etapa
+            const pecaFisicaReferencia = etapa === 'NUCLEO' ? 'EIXO' : 'CT';
+            const servicoNome = etapa === 'NUCLEO' ? 'Montagem de Núcleo' : 'Carcaçamento Completo';
+
+            const trackingList = selectedOS.full_tracking || selectedOS.tracking || [];
+            let trk = trackingList.find(t => (t.component_name || t.component || '').toUpperCase() === pecaFisicaReferencia);
+
+            let trackingData = [];
+            if (trk && trk.tracking_data) {
+                trackingData = typeof trk.tracking_data === 'string' ? JSON.parse(trk.tracking_data) : trk.tracking_data;
+            }
+
+            trackingData = trackingData.filter(log => log.service !== servicoNome);
+            trackingData.push({
+                service: servicoNome,
+                start_time: startTimeStr,
+                end_time: new Date().toISOString(),
+                duration_seconds: durationSeconds
+            });
+
+            const osId = selectedOS.service_order_id || selectedOS.os_id || selectedOS.id;
+
+            try {
+                // Sincroniza diretamente com o Supabase usando UPSERT de garantia de chaves
+                const { error } = await supabaseClient
+                    .from('component_tracking')
+                    .upsert({
+                        service_order_id: osId,
+                        component_name: pecaFisicaReferencia,
+                        tracking_data: trackingData,
+                        current_stage: 'MONTAGEM',
+                        status: 'Finalizado'
+                    }, { onConflict: 'service_order_id,component_name' });
+
+                if (!error) {
+                    if (trk) {
+                        trk.tracking_data = trackingData;
+                    } else {
+                        const novaPeca = {
+                            component: pecaFisicaReferencia,
+                            component_name: pecaFisicaReferencia,
+                            current_stage: 'MONTAGEM',
+                            status: 'Finalizado',
+                            tracking_data: trackingData
+                        };
+                        if (selectedOS.tracking) selectedOS.tracking.push(novaPeca);
+                        if (selectedOS.full_tracking) selectedOS.full_tracking.push(novaPeca);
+                    }
+
+                    // Preenche e abre o modal de tempos
+                    document.getElementById('resumo-peca-nome').innerText = servicoNome;
+                    document.getElementById('resumo-inicio').innerText = new Date(startTimeStr).toLocaleTimeString('pt-BR');
+                    document.getElementById('resumo-fim').innerText = new Date().toLocaleTimeString('pt-BR');
+                    
+                    const min = Math.floor(durationSeconds / 60);
+                    const sec = durationSeconds % 60;
+                    document.getElementById('resumo-duracao').innerText = `${min}:${sec.toString().padStart(2, '0')} min`;
+                    
+                    document.getElementById('modal-resumo-tempo').classList.remove('hidden');
+                    document.getElementById('modal-resumo-tempo').classList.add('flex');
+
+                    atualizarWorkspaceMontagem();
+                } else {
+                    alert("Erro ao gravar tempos no Supabase: " + error.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Falha na conexão.");
+            }
         }
 
         function confirmarEtapaMontagem() {
@@ -352,7 +488,7 @@
 
         async function enviarProximaEtapa(setorAlvo, tipoMontagem) {
             closeModal();
-            const btn = document.getElementById('btn-iniciar-torque');
+            const btn = document.getElementById('btn-concluir-etapa');
             btn.disabled = true;
             btn.innerText = "ENVIANDO...";
 
@@ -381,9 +517,118 @@
             }
         }
 
+        // GESTÃO DE LIMPEZA DE SETOR (MONTAGEM)
+        async function toggleSectorCleaning(sectorName) {
+            const timerKey = `timer_sector_cleaning_start_${sectorName}`;
+            const startTimeStr = localStorage.getItem(timerKey);
+            const btn = document.getElementById('btn-sector-cleaning');
+
+            if (!startTimeStr) {
+                localStorage.setItem(timerKey, new Date().toISOString());
+                btn.classList.replace('bg-turbo-teal', 'bg-red-600');
+                btn.classList.replace('hover:bg-teal-700', 'hover:bg-red-750');
+                btn.classList.add('animate-pulse');
+                btn.innerText = "Parar Limpeza (00:00)";
+            } else {
+                localStorage.removeItem(timerKey);
+                btn.classList.replace('bg-red-600', 'bg-turbo-teal');
+                btn.classList.replace('hover:bg-red-750', 'hover:bg-teal-700');
+                btn.classList.remove('animate-pulse');
+                btn.innerText = "Iniciar Limpeza Setor";
+
+                const elapsed = Math.floor((new Date() - new Date(startTimeStr)) / 1000);
+                const min = Math.floor(elapsed / 60);
+                const sec = elapsed % 60;
+                const formattedTime = `${min}:${sec.toString().padStart(2, '0')} min`;
+
+                if (selectedOS) {
+                    const osId = selectedOS.service_order_id || selectedOS.id || selectedOS.os_id;
+                    try {
+                        await supabaseClient
+                            .from('history_events')
+                            .insert({
+                                service_order_id: osId,
+                                action: 'Limpeza do Setor Executada',
+                                details: `O operador realizou a limpeza do setor de ${sectorName} durante ${formattedTime}.`,
+                                timestamp: new Date().toISOString()
+                            });
+                        
+                        document.getElementById('resumo-peca-nome').innerText = `Limpeza Setor: ${sectorName}`;
+                        document.getElementById('resumo-inicio').innerText = new Date(startTimeStr).toLocaleTimeString('pt-BR');
+                        document.getElementById('resumo-fim').innerText = new Date().toLocaleTimeString('pt-BR');
+                        document.getElementById('resumo-duracao').innerText = formattedTime;
+                        
+                        document.getElementById('modal-resumo-tempo').classList.remove('hidden');
+                        document.getElementById('modal-resumo-tempo').classList.add('flex');
+                    } catch (e) { console.error(e); }
+                } else {
+                    alert(`Limpeza concluída: ${formattedTime}. Nenhuma OS selecionada para salvar no histórico.`);
+                }
+            }
+        }
+
         function closeModal() {
             document.getElementById('custom-modal').classList.add('hidden');
         }
+
+        // Loop de Atualização de Cronômetros em tempo real (1 segundo)
+        setInterval(() => {
+            // 1. Atualização em tempo real do cronômetro de Montagem ativo
+            if (selectedOS) {
+                const etapa = getEtapaMontagemAtual();
+                const timerKey = `timer_${selectedOS.id}_MONTAGEM_${etapa}`;
+                const startTimeStr = localStorage.getItem(timerKey);
+                
+                if (startTimeStr) {
+                    const elapsed = Math.floor((new Date() - new Date(startTimeStr)) / 1000);
+                    const min = Math.floor(elapsed / 60);
+                    const sec = elapsed % 60;
+                    const badge = document.getElementById('assembly-timer-badge');
+                    if (badge) badge.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+                }
+            }
+
+            // 2. Atualização em tempo real do cronômetro de Limpeza do Setor
+            const cleaningKey = `timer_sector_cleaning_start_MONTAGEM`;
+            const cleaningStart = localStorage.getItem(cleaningKey);
+            if (cleaningStart) {
+                const elapsed = Math.floor((new Date() - new Date(cleaningStart)) / 1000);
+                const min = Math.floor(elapsed / 60);
+                const sec = elapsed % 60;
+                const btn = document.getElementById('btn-sector-cleaning');
+                if (btn) btn.innerText = `Parar Limpeza (${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')})`;
+            }
+        }, 1000);
     </script>
+
+    <div id="modal-resumo-tempo" class="fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border-t-8 border-teal-500">
+            <div class="p-8 text-center">
+                <div class="w-20 h-20 bg-teal-50 text-turbo-teal rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-stopwatch text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter mb-2">Etapa Concluída!</h3>
+                <p id="resumo-peca-nome" class="text-turbo-teal font-bold uppercase text-sm mb-2">SERVIÇO</p>
+                <p class="text-[11px] text-slate-500 font-medium italic mb-6">Tempo de montagem salvo com sucesso no banco de dados.</p>
+                
+                <div class="grid grid-cols-2 gap-4 mb-8 bg-slate-50 p-4 rounded-2xl">
+                    <div class="text-left">
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Início</p>
+                        <p id="resumo-inicio" class="font-bold text-slate-700">--:--</p>
+                    </div>
+                    <div class="text-left border-l pl-4">
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Fim</p>
+                        <p id="resumo-fim" class="font-bold text-slate-700">--:--</p>
+                    </div>
+                    <div class="col-span-2 border-t pt-2 mt-2">
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Tempo Gasto na Montagem</p>
+                        <p id="resumo-duracao" class="text-2xl font-black text-turbo-teal">--</p>
+                    </div>
+                </div>
+
+                <button onclick="document.getElementById('modal-resumo-tempo').classList.add('hidden')" class="w-full bg-slate-800 text-white font-black py-4 rounded-2xl uppercase text-xs tracking-widest hover:bg-black transition shadow-lg">OK, Continuar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
