@@ -188,7 +188,37 @@
             try {
                 const response = await fetch(API_QUEUE);
                 const data = await response.json();
-                queueData = Array.isArray(data) ? data : (data.data || []);
+                let rawQueue = Array.isArray(data) ? data : (data.data || []);
+                
+                // Filtro Inteligente: Remove OSs que já passaram do setor de Montagem antes de desenhar a barra lateral
+                if (rawQueue.length > 0) {
+                    const osIds = rawQueue.map(os => os.service_order_id || os.os_id || os.id);
+                    
+                    // Busca os dados de rastreamento de todas as OSs da fila em uma única consulta
+                    const { data: trackings, error } = await supabaseClient
+                        .from('component_tracking')
+                        .select('*')
+                        .in('service_order_id', osIds);
+                        
+                    if (!error && trackings) {
+                        rawQueue = rawQueue.filter(os => {
+                            const osId = os.service_order_id || os.os_id || os.id;
+                            const osTracking = trackings.filter(t => t.service_order_id === osId);
+                            
+                            const pecaInteira = osTracking.find(t => (t.component_name || t.component || '').toUpperCase() === 'PEÇA INTEIRA');
+                            const stageCompleta = pecaInteira ? (pecaInteira.target_sector || pecaInteira.current_stage || pecaInteira.stage || '').toUpperCase() : '';
+                            
+                            const isFinalized = (stageCompleta === 'QUALIDADE' || stageCompleta === 'BALANCEAMENTO' || stageCompleta === 'EXPEDICAO' || stageCompleta === 'EXPEDIÇÃO');
+                            
+                            // Vincula os dados de tracking para deixar o clique posterior instantâneo
+                            os.full_tracking = osTracking; 
+                            
+                            return !isFinalized; // Retorna true apenas para as OSs que NÃO foram finalizadas
+                        });
+                    }
+                }
+                
+                queueData = rawQueue;
                 renderSidebar();
             } catch (e) { console.error("Erro na fila:", e); }
         }
@@ -230,38 +260,7 @@
             document.getElementById('display-os').innerText = selectedOS.business_id;
             document.getElementById('display-desc').innerText = `${selectedOS.client} | ${selectedOS.model}`;
             
-            console.log("🔍 Buscando dados no Supabase para a OS ID:", selectedOS.service_order_id || selectedOS.os_id || selectedOS.id);
-
-            try {
-                const { data: trackingData, error } = await supabaseClient
-                    .from('component_tracking')
-                    .select('*')
-                    .eq('service_order_id', selectedOS.service_order_id || selectedOS.os_id || selectedOS.id);
-                
-                if (!error && trackingData) {
-                    selectedOS.full_tracking = trackingData;
-                    console.log("✅ Dados recebidos do Supabase com sucesso:", trackingData);
-                } else {
-                    console.error("❌ Erro retornado pelo Supabase:", error);
-                }
-            } catch (e) {
-                console.error("❌ Exceção ao buscar dados:", e);
-            }
-
-            // AUTO-FILTRO: Se a OS já passou para setores finais, removemos da fila da Montagem imediatamente
-            const state = getAssemblyDetailedState();
-            if (state === 'FINALIZADO') {
-                const card = document.getElementById(`os-card-${id}`);
-                if (card) card.style.display = 'none'; // Some com a OS da barra lateral
-                
-                // Volta para a tela de bem-vindo
-                document.getElementById('main-workspace').classList.add('hidden');
-                document.getElementById('welcome-screen').classList.remove('hidden');
-                selectedOS = null;
-                alert("ℹ️ Esta OS já foi finalizada na Montagem e está nas etapas finais.");
-                return;
-            }
-
+            // Os dados de tracking já foram carregados e filtrados na inicialização da página
             atualizarWorkspaceMontagem();
         }
 
